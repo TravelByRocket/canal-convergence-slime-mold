@@ -1,6 +1,8 @@
 #include <Adafruit_NeoPixel.h>
+#include <WiFi.h>
+#include <bryanwifinetworks.h>
 
-const int selfIDPins[] = {34,39,36}; // board labels A2, A3, A4
+const int selfIDPins[] = {34,39,36}; // board labels A2,A3,A4
 const int capTouchPins[] = {14,32,15}; // board labels match
 const int ledPins[] = {26,25,27,33}; // board labels A0,A1,27,33
 
@@ -52,13 +54,14 @@ bool growingB = true;
 int delayval = 50; // delay between loops in ms
 
 void setup() {
+  Serial.begin(115200);
+  Serial.println(""); //get out of the way of the line of Q marks
+  setupWiFiMulti();
   ledstrip0.begin();
   ledstrip1.begin();
   ledstrip2.begin();
   ledstrip3.begin();
-  Serial.begin(115200);
   selfIdentify();
-  Serial.println(identity);
 }
 
 int traveler = 0;
@@ -126,13 +129,13 @@ void setPixelColorSectB(int i, int r, int g, int b){ //120, 45, 60
 void selfIdentify() {
   if        (isID(1,0,0)) { // for ID 0x100
     identity = longSiteLeft;
-    Serial.println("I am longSiteLeft, ID 0x100, enum ");
+    Serial.print("I am longSiteLeft, ID 0x100, enum ");
   } else if (isID(0,1,0)) { // for ID 0x010
     identity = longSiteRight;
-    Serial.println("I am longSiteRight, ID 0x010, enum ");
+    Serial.print("I am longSiteRight, ID 0x010, enum ");
   } else if (isID(0,0,1)) { // for ID 0x001
     identity = shortSite;
-    Serial.println("I am shortSite, ID 0x001, enum ");
+    Serial.print("I am shortSite, ID 0x001, enum ");
   }
   Serial.println(identity);
 }
