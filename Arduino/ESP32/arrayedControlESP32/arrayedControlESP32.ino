@@ -1,39 +1,29 @@
 #include <Adafruit_NeoPixel.h>
+#include <ArduinoJson.h>
 #include <WiFi.h>
+#include <ESPmDNS.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
 #include <bryanwifinetworks.h>
 
-const int selfIDPins[] = {34,39,36}; // board labels A2,A3,A4
-const int capTouchPins[] = {14,32,15}; // board labels match
-const int ledPins[] = {26,25,27,33}; // board labels A0,A1,27,33
+const int SELFIDPINS[] = {34,39,36}; // board labels A2,A3,A4
+const int CAPTOUCHPINS[] = {14,32,15}; // board labels match
+const int LEDPINS[] = {26,25,27,33}; // board labels A0,A1,27,33
 
-enum locations {longSiteLeft,longSiteRight,shortSite};
+enum locations {longSiteLeft,longSiteRight,shortSiteLeft,shortSiteRight,shortSite};
 enum locations identity; // the identity name describes where it is
 
-// Which pin on the Arduino is connected to the NeoPixels?
-int PINLEDSTRIP0 = 4;
-int PINLEDSTRIP1 = 0;
-int PINLEDSTRIP2 = 2;
-int PINLEDSTRIP3 = 15;
-
 // How many NeoPixels are attached to the Arduino?
-int NUMPIXLEDSTRIP0 = 150;
-int NUMPIXLEDSTRIP1 = 150;
-int NUMPIXLEDSTRIP2 = 130;
-int NUMPIXLEDSTRIP3 = 150;
+int NUMPIX[] = {150,150,130,130,150,150,150, // seven LED strips in long site
+                150,150,150,150,150}; // five LED strips in the short site
 
 int NUMPIXSECTA = 255; // 150px (5.0m) on strip 0 -> 105px (3.5m) on strip 1
 int NUMPIXSECTB = 225; // 120px (4.0m) on strip 2 ->  45px (1.5m) on strip 1 -> 60px (2.0m) on strip 3
 int NUMPIXSECTC = 150;
 int NUMPIXSECTD = 150;
 
-// When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
-Adafruit_NeoPixel ledstrip0 = Adafruit_NeoPixel(NUMPIXLEDSTRIP0, PINLEDSTRIP0, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel ledstrip1 = Adafruit_NeoPixel(NUMPIXLEDSTRIP1, PINLEDSTRIP1, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel ledstrip2 = Adafruit_NeoPixel(NUMPIXLEDSTRIP2, PINLEDSTRIP2, NEO_GRB + NEO_KHZ800);
-Adafruit_NeoPixel ledstrip3 = Adafruit_NeoPixel(NUMPIXLEDSTRIP3, PINLEDSTRIP3, NEO_GRB + NEO_KHZ800);
-
-//CapacitiveSensor cs5_4 = CapacitiveSensor(5,4);
-//CapacitiveSensor cs3_2 = CapacitiveSensor(3,2);
+const int NUMSTRIPS = 12;
+Adafruit_NeoPixel ledstrips[NUMSTRIPS];
 
 int long startWave1 = 0;
 int long startWave2 = 0;
@@ -56,18 +46,32 @@ int delayval = 50; // delay between loops in ms
 void setup() {
   Serial.begin(115200);
   Serial.println(""); //get out of the way of the line of Q marks
-  setupWiFiMulti();
-  ledstrip0.begin();
-  ledstrip1.begin();
-  ledstrip2.begin();
-  ledstrip3.begin();
+
+  WiFi.mode(WIFI_STA);
+  setupWiFiMulti(); // this comes from my custom library file // NOTE make a class?
+  setupOTA();
+  
+  for (int i = 0; i < NUMSTRIPS; i++){
+    ledstrips[i] = Adafruit_NeoPixel(NUMPIX[i], LEDPINS[i], NEO_GRB + NEO_KHZ800);
+  }
+  
+  
+  // ledstrip0.begin();
+  // ledstrip1.begin();
+  // ledstrip2.begin();
+  // ledstrip3.begin();
   selfIdentify();
+  
+  setupSite(identity);
+
 }
 
 int traveler = 0;
 
 void loop() {
-
+  ArduinoOTA.handle();
+  loopSite(identity);
+  
   // if (wavePosSecA < NUMPIXSECTA && growingA){ // if growing but not reach the end
   //   wavePosSecA = (int) ((waveStartTimeA/1000) * waveSpeed); // CONSIDER change to += so that not completely reset each touch, i.e. can bounce
   //   wavePosSecA > NUMPIXSECTA ? wavePosSecA = NUMPIXSECTA; // must clamp the index max of NUMPIX
@@ -92,10 +96,10 @@ void loop() {
       setPixelColorSectB(q,100,0,0);
   }
   
-  ledstrip0.show();
-  ledstrip1.show();
-  ledstrip2.show();
-  ledstrip3.show();
+  // ledstrip0.show();
+  // ledstrip1.show();
+  // ledstrip2.show();
+  // ledstrip3.show();
   
   delay(delayval);
 
@@ -110,19 +114,19 @@ void loop() {
 
 void setPixelColorSectA(int i, int r, int g, int b){
   if (i < 150) {
-    ledstrip0.setPixelColor(150 - i,r,g,b); // against strip indices; offset by length of strip and subtract index
+    // ledstrip0.setPixelColor(150 - i,r,g,b); // against strip indices; offset by length of strip and subtract index
   } else if (i < 150 + 105) {
-    ledstrip1.setPixelColor(i - 150,r,g,b); // with strip indices; go with index but offset by length of strip
+    // ledstrip1.setPixelColor(i - 150,r,g,b); // with strip indices; go with index but offset by length of strip
   }
 }
 
 void setPixelColorSectB(int i, int r, int g, int b){ //120, 45, 60
   if (i < 120) {
-    ledstrip2.setPixelColor(120 - i,r,g,b); // against strip indices; offset by length of strip and subtract index
+    // ledstrip2.setPixelColor(120 - i,r,g,b); // against strip indices; offset by length of strip and subtract index
   } else if (i < 120 + 45) {
-    ledstrip1.setPixelColor(i - 15,r,g,b); // with strip indices; offset by difference of indices between strips 2 and 1
+    // ledstrip1.setPixelColor(i - 15,r,g,b); // with strip indices; offset by difference of indices between strips 2 and 1
   } else if (i < 105 + 45 + 60) {
-    ledstrip3.setPixelColor(i - 120 - 45,r,g,b); // with strip indices; offset by length of strip 2 and portion on strip 1
+    // ledstrip3.setPixelColor(i - 120 - 45,r,g,b); // with strip indices; offset by length of strip 2 and portion on strip 1
   }
 }
 
@@ -144,17 +148,97 @@ bool isID(int bit0, int bit1, int bit2){
   // return true if all ID bits match, otherwise false
   int bitID[] = {bit0,bit1,bit2};
 
-  if        (bitID[0] != digitalRead(capTouchPins[0])) {
+  if        (bitID[0] != digitalRead(SELFIDPINS[0])) {
     return false;
-  } else if (bitID[1] != digitalRead(capTouchPins[1])) {
+  } else if (bitID[1] != digitalRead(SELFIDPINS[1])) {
     return false;
-  } else if (bitID[2] != digitalRead(capTouchPins[2])) {
+  } else if (bitID[2] != digitalRead(SELFIDPINS[2])) {
     return false;
   } else {
     return true;
   }
 
 }
+
+void setupOTA(){
+  ArduinoOTA
+    .onStart([]() {
+      String type;
+      if (ArduinoOTA.getCommand() == U_FLASH)
+        type = "sketch";
+      else // U_SPIFFS
+        type = "filesystem";
+
+      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+      Serial.println("Start updating " + type);
+    })
+    .onEnd([]() {
+      Serial.println("\nEnd");
+    })
+    .onProgress([](unsigned int progress, unsigned int total) {
+      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    })
+    .onError([](ota_error_t error) {
+      Serial.printf("Error[%u]: ", error);
+      if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+      else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+      else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+      else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+      else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    });
+
+  ArduinoOTA.begin();
+}
+
+void setupSite(enum locations which){
+  if (which == longSiteLeft){
+    setupLongSiteLeft();
+  } else if (which == longSiteRight) {
+    setupLongSiteRight();
+  } else if (which == shortSite) {
+    setupShortSite();
+  }
+}
+
+void loopSite(enum locations which){
+  if (which == longSiteLeft){
+    loopLongSiteLeft();
+  } else if (which == longSiteRight) {
+    loopLongSiteRight();
+  } else if (which == shortSite) {
+    loopShortSite();
+  }
+}
+
+
+
+void setupLongSiteLeft() {
+  // for (int i = 0; i < 4){
+
+  // }
+  
+}
+void setupLongSiteRight() {
+
+}
+void setupShortSite() {
+
+}
+void loopLongSiteLeft() {
+
+}
+void loopLongSiteRight() {
+
+}
+void loopShortSite() {
+
+}
+
+// CONSIDER THIS FROM OTABASIC
+  // while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+  //   Serial.println("Connection Failed! Rebooting...");
+  //   delay(5000);
+  //   ESP.restart();
 
 // UNUSED ALTERNATIVE IMPLEMENTATION OF SELF-ID FUNCTION
 // bool isID_alt(int bit0, int bit1, int bit2){ 
@@ -163,7 +247,7 @@ bool isID(int bit0, int bit1, int bit2){
 //   bool bitMatches[IDbits];
 
 //   for (int i = 0; i < IDbits; i++){
-//     if (bitID[i] = digitalRead(capTouchPins[i])){
+//     if (bitID[i] = digitalRead(SELFIDPINS[i])){
 //       bitMatches[i] = true;
 //     } else {
 //       bitMatches[i] = false;
