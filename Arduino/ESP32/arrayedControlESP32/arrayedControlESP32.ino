@@ -1,5 +1,12 @@
 #include <Adafruit_NeoPixel.h>
 
+const int selfIDPins[] = {34,39,36}; // board labels A2, A3, A4
+const int capTouchPins[] = {14,32,15}; // board labels match
+const int ledPins[] = {26,25,27,33}; // board labels A0,A1,27,33
+
+enum locations {longSiteLeft,longSiteRight,shortSite};
+enum locations identity; // the identity name describes where it is
+
 // Which pin on the Arduino is connected to the NeoPixels?
 int PINLEDSTRIP0 = 4;
 int PINLEDSTRIP1 = 0;
@@ -29,6 +36,19 @@ Adafruit_NeoPixel ledstrip3 = Adafruit_NeoPixel(NUMPIXLEDSTRIP3, PINLEDSTRIP3, N
 int long startWave1 = 0;
 int long startWave2 = 0;
 
+int long activatedTimeSectA = 0; // time the sensor was touched
+int long activatedTimeSectB = 0;
+
+int long deactivatedTimeSectA = 0; // time the sensor was untouched
+int long deactivatedTimeSectB = 0;
+
+int wavePosSecA = 0;
+int wavePosSecB = 0;
+int waveSpeed = 50; // pixels/second
+
+bool growingA = true;
+bool growingB = true;
+
 int delayval = 50; // delay between loops in ms
 
 void setup() {
@@ -36,13 +56,21 @@ void setup() {
   ledstrip1.begin();
   ledstrip2.begin();
   ledstrip3.begin();
-  Serial.begin(9600);
+  Serial.begin(115200);
+  selfIdentify();
+  Serial.println(identity);
 }
 
 int traveler = 0;
 
 void loop() {
 
+  // if (wavePosSecA < NUMPIXSECTA && growingA){ // if growing but not reach the end
+  //   wavePosSecA = (int) ((waveStartTimeA/1000) * waveSpeed); // CONSIDER change to += so that not completely reset each touch, i.e. can bounce
+  //   wavePosSecA > NUMPIXSECTA ? wavePosSecA = NUMPIXSECTA; // must clamp the index max of NUMPIX
+  // } else if (wavePosSecA > 0 && !growingA){ // if shrinking but not reached the start
+  //   wavePosSecA = (int) NUMPIXSECTA - ((waveStartTimeA/1000) * waveSpeed);
+  // }
   
 
   for(int m = 0; m < NUMPIXSECTA; m++){ // set base color
@@ -95,25 +123,56 @@ void setPixelColorSectB(int i, int r, int g, int b){ //120, 45, 60
   }
 }
 
-// CONSIDER Object/Class version of each section but may be overkill, at least while planning
-//class LEDSection {
-//  int NUMPIXELS;
-//  int conversionArray[NUMPIXELS][2]; // led strip i, strip index j
-//  int counter = 0; // keep track of where indices have already been process
-//
-//  public: 
-//    Button(int NUMPIXELS)
-//    
-//    void addSectionIndices(int LEDSTRIPID, int START, INT END){ // call this for each LED strip portion of each 
-//      int slicelength = abs(END - START) + 1
-//      START < END ? direction = 1 : direction = -1;
-//
-//      for(int i = START; i < END; i += direction){
-//        conversionArray[0][counter] = LEDSTRIPID;
-//        conversionArray[1][counter] = i;
-//      }
-//
-//      counter++; // update the last-processed index
-//
-//    }
-//}
+void selfIdentify() {
+  if        (isID(1,0,0)) { // for ID 0x100
+    identity = longSiteLeft;
+    Serial.println("I am longSiteLeft, ID 0x100, enum ");
+  } else if (isID(0,1,0)) { // for ID 0x010
+    identity = longSiteRight;
+    Serial.println("I am longSiteRight, ID 0x010, enum ");
+  } else if (isID(0,0,1)) { // for ID 0x001
+    identity = shortSite;
+    Serial.println("I am shortSite, ID 0x001, enum ");
+  }
+  Serial.println(identity);
+}
+
+bool isID(int bit0, int bit1, int bit2){
+  // return true if all ID bits match, otherwise false
+  int bitID[] = {bit0,bit1,bit2};
+
+  if        (bitID[0] != digitalRead(capTouchPins[0])) {
+    return false;
+  } else if (bitID[1] != digitalRead(capTouchPins[1])) {
+    return false;
+  } else if (bitID[2] != digitalRead(capTouchPins[2])) {
+    return false;
+  } else {
+    return true;
+  }
+
+}
+
+// UNUSED ALTERNATIVE IMPLEMENTATION OF SELF-ID FUNCTION
+// bool isID_alt(int bit0, int bit1, int bit2){ 
+//   int IDbits = 3;
+//   int bitID[] = {bit0,bit1,bit2};
+//   bool bitMatches[IDbits];
+
+//   for (int i = 0; i < IDbits; i++){
+//     if (bitID[i] = digitalRead(capTouchPins[i])){
+//       bitMatches[i] = true;
+//     } else {
+//       bitMatches[i] = false;
+//     }
+//   }
+
+//   for (int j = 0; j < IDbits; j++){
+//     if (bitMatches[0] && bitMatches[1] && bitMatches[2]){
+//       return true;
+//     } else {
+//       return false
+//     }
+//   }
+
+// }

@@ -29,6 +29,19 @@ Adafruit_NeoPixel ledstrip3 = Adafruit_NeoPixel(NUMPIXLEDSTRIP3, PINLEDSTRIP3, N
 int long startWave1 = 0;
 int long startWave2 = 0;
 
+int long activatedTimeSectA = 0; // time the sensor was touched
+int long activatedTimeSectB = 0;
+
+int long deactivatedTimeSectA = 0; // time the sensor was untouched
+int long deactivatedTimeSectB = 0;
+
+int wavePosSecA = 0;
+int wavePosSecB = 0;
+int waveSpeed = 50; // pixels/second
+
+bool growingA = true;
+bool growingB = true;
+
 int delayval = 50; // delay between loops in ms
 
 void setup() {
@@ -43,6 +56,12 @@ int traveler = 0;
 
 void loop() {
 
+  if (wavePosSecA < NUMPIXSECTA && growingA){ // if growing but not reach the end
+    wavePosSecA = (int) ((waveStartTimeA/1000) * waveSpeed); // CONSIDER change to += so that not completely reset each touch, i.e. can bounce
+    wavePosSecA > NUMPIXSECTA ? wavePosSecA = NUMPIXSECTA; // must clamp the index max of NUMPIX
+  } else if (wavePosSecA > 0 && !growingA){ // if shrinking but not reached the start
+    wavePosSecA = (int) NUMPIXSECTA - ((waveStartTimeA/1000) * waveSpeed);
+  }
   
 
   for(int m = 0; m < NUMPIXSECTA; m++){ // set base color
