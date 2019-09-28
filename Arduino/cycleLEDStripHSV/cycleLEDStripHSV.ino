@@ -5,10 +5,10 @@
 #include <Adafruit_NeoPixel.h>
 
 // Which pin on the Arduino is connected to the NeoPixels?
-int LEDPIN = 6;
+int LEDPIN = 4;
 
 // How many NeoPixels are attached to the Arduino?
-int NUMPIXELS = 75;
+int NUMPIXELS = 150;
 
 // When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, LEDPIN, NEO_GRB + NEO_KHZ800);
@@ -31,5 +31,7 @@ void loop() {
   pixels.show();
   delay(20);
   hue += 300;
-  Serial.println(hue);
+  Serial.print(millis());
+  Serial.print(",");
+  Serial.println(hue%65536);
 }

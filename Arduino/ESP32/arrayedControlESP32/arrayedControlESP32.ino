@@ -1,3 +1,7 @@
+// LED controller code for two HUZZAH32 boards controlling one long site of LEDs
+// Same code is used for both positions and is run selectively using SELFID pins
+// 
+
 #include <Adafruit_NeoPixel.h>
 #include <ArduinoJson.h>
 #include <WiFi.h>
@@ -6,128 +10,75 @@
 #include <ArduinoOTA.h>
 #include <bryanwifinetworks.h>
 
-const int SELFIDPINS[] = {34,39,36}; // board labels A2,A3,A4
-const int CAPTOUCHPINS[] = {14,32,15}; // board labels match
+const int SELFIDPINS[] = {18,19,16}; // board labels A2,A3,A4
+const int CAPTOUCHPINS[] = {14,33,15}; // 14 and 15 match the board; S/W pin 33 is labeled pin 32 on HUZZAH32
 const int LEDPINS[] = {26,25,27,33}; // board labels A0,A1,27,33
 
-enum locations {longSiteLeft,longSiteRight,shortSiteLeft,shortSiteRight,shortSite};
+enum locations {longSiteLeft,longSiteRight}; // selected later usin SELFID pins
 enum locations identity; // the identity name describes where it is
 
-// How many NeoPixels are attached to the Arduino?
-int NUMPIX[] = {150,150,130,130,150,150,150, // seven LED strips in long site
-                150,150,150,150,150}; // five LED strips in the short site
+// the number of pixels used on each strip
+int NUMPIXSTRIP[] = {150, // Strip 1; all LEDs used
+                     150, // Strip 2; all LEDs used
+                     130, // Strip 3; 29 LEDs unused at end
+                     130, // Strip 4; 30 LEDs unused at end
+                     150, // Strip 5; 18 LEDs unsed at start
+                     150, // Strip 6; 16 LEDs unused at end
+                     150};// Strip 7; all LEDs used
 
-int NUMPIXSECTA = 255; // 150px (5.0m) on strip 0 -> 105px (3.5m) on strip 1
-int NUMPIXSECTB = 225; // 120px (4.0m) on strip 2 ->  45px (1.5m) on strip 1 -> 60px (2.0m) on strip 3
-int NUMPIXSECTC = 150;
-int NUMPIXSECTD = 150;
+// the number of pixels per finger
+int NUMPIXFINGER[] = {100,
+                       121,
+                       102,
+                       134,
+                       140};
 
-const int NUMSTRIPS = 12;
-Adafruit_NeoPixel ledstrips[NUMSTRIPS];
+// the number of pixels per arm section
+int NUMPIXARM[] = {120,
+                   88,
+                   76,
+                   56};
 
-int long startWave1 = 0;
-int long startWave2 = 0;
+const int NUMSTRIPS = 7;
+const int NUMFINGERS = 5;
+const int NUMARMS = 4;
 
-int long activatedTimeSectA = 0; // time the sensor was touched
-int long activatedTimeSectB = 0;
-
-int long deactivatedTimeSectA = 0; // time the sensor was untouched
-int long deactivatedTimeSectB = 0;
-
-int wavePosSecA = 0;
-int wavePosSecB = 0;
-int waveSpeed = 50; // pixels/second
-
-bool growingA = true;
-bool growingB = true;
+Adafruit_NeoPixel ledstrips[4]; // var declaration here; initialized with FOR loop in SETUP
 
 int delayval = 50; // delay between loops in ms
 
 void setup() {
   Serial.begin(115200);
-  Serial.println(""); //get out of the way of the line of Q marks
+  Serial.println(""); //get out of the way of the line of repeating `?`
 
-  WiFi.mode(WIFI_STA);
-  setupWiFiMulti(); // this comes from my custom library file // NOTE make a class?
-  setupOTA();
-  
-  for (int i = 0; i < NUMSTRIPS; i++){
-    ledstrips[i] = Adafruit_NeoPixel(NUMPIX[i], LEDPINS[i], NEO_GRB + NEO_KHZ800);
+  // WiFi.mode(WIFI_STA);
+  // setupWiFiMulti(); // used to select from preferred networks as contained in my custom library file // NOTE: make a class?
+  // setupOTA(); // run function to enable over-the-air updating
+
+  for (int i = 0; i < 4; i++){
+    ledstrips[i] = Adafruit_NeoPixel(NUMPIXSTRIP[i], LEDPINS[i], NEO_GRB + NEO_KHZ800);
+    // ledstrips[i].begin();
   }
-  
-  
-  // ledstrip0.begin();
-  // ledstrip1.begin();
-  // ledstrip2.begin();
-  // ledstrip3.begin();
+
+  for (int i = 0; i < 4; i++){
+    // ledstrips[i] = Adafruit_NeoPixel(NUMPIXSTRIP[i], LEDPINS[i], NEO_GRB + NEO_KHZ800);
+    ledstrips[i].begin();
+  }
+
   selfIdentify();
   
   setupSite(identity);
-
+  Serial.println("setup loop completed");
 }
-
-int traveler = 0;
 
 void loop() {
+  // Serial.println("point 1");
   ArduinoOTA.handle();
+  // Serial.println("point 2");
   loopSite(identity);
-  
-  // if (wavePosSecA < NUMPIXSECTA && growingA){ // if growing but not reach the end
-  //   wavePosSecA = (int) ((waveStartTimeA/1000) * waveSpeed); // CONSIDER change to += so that not completely reset each touch, i.e. can bounce
-  //   wavePosSecA > NUMPIXSECTA ? wavePosSecA = NUMPIXSECTA; // must clamp the index max of NUMPIX
-  // } else if (wavePosSecA > 0 && !growingA){ // if shrinking but not reached the start
-  //   wavePosSecA = (int) NUMPIXSECTA - ((waveStartTimeA/1000) * waveSpeed);
-  // }
-  
-
-  for(int m = 0; m < NUMPIXSECTA; m++){ // set base color
-    setPixelColorSectA(m,0,50,50);
-  }
-
-  for(int n = 0; n < NUMPIXSECTB; n++){ // set base color
-    setPixelColorSectB(n,50,0,50);
-  }
-
-  for (int p = 0; p < floor(millis()-startWave1)/25; p++){ // red from beginning of strip to end
-      setPixelColorSectA(p,100,0,0);
-  }
-
-  for (int q = 0; q < floor(millis()-startWave2)/25; q++){ // red from beginning of strip to end
-      setPixelColorSectB(q,100,0,0);
-  }
-  
-  // ledstrip0.show();
-  // ledstrip1.show();
-  // ledstrip2.show();
-  // ledstrip3.show();
-  
+  // Serial.println("point 3");
   delay(delayval);
-
-  if (millis() - startWave1 > 6800){
-    startWave1 = millis();
-  }
-  
-  if (millis() - startWave2 > 7300){
-    startWave2 = millis();
-  }
-}
-
-void setPixelColorSectA(int i, int r, int g, int b){
-  if (i < 150) {
-    // ledstrip0.setPixelColor(150 - i,r,g,b); // against strip indices; offset by length of strip and subtract index
-  } else if (i < 150 + 105) {
-    // ledstrip1.setPixelColor(i - 150,r,g,b); // with strip indices; go with index but offset by length of strip
-  }
-}
-
-void setPixelColorSectB(int i, int r, int g, int b){ //120, 45, 60
-  if (i < 120) {
-    // ledstrip2.setPixelColor(120 - i,r,g,b); // against strip indices; offset by length of strip and subtract index
-  } else if (i < 120 + 45) {
-    // ledstrip1.setPixelColor(i - 15,r,g,b); // with strip indices; offset by difference of indices between strips 2 and 1
-  } else if (i < 105 + 45 + 60) {
-    // ledstrip3.setPixelColor(i - 120 - 45,r,g,b); // with strip indices; offset by length of strip 2 and portion on strip 1
-  }
+  // Serial.println("point 4");
 }
 
 void selfIdentify() {
@@ -137,9 +88,8 @@ void selfIdentify() {
   } else if (isID(0,1,0)) { // for ID 0x010
     identity = longSiteRight;
     Serial.print("I am longSiteRight, ID 0x010, enum ");
-  } else if (isID(0,0,1)) { // for ID 0x001
-    identity = shortSite;
-    Serial.print("I am shortSite, ID 0x001, enum ");
+  } else {
+    Serial.print("there is a problem");
   }
   Serial.println(identity);
 }
@@ -161,6 +111,12 @@ bool isID(int bit0, int bit1, int bit2){
 }
 
 void setupOTA(){
+  if(identity == longSiteLeft){
+      ArduinoOTA.setHostname("esp32longSiteLeft");
+  } else if(identity == longSiteRight){
+      ArduinoOTA.setHostname("esp32longSiteRight");
+  }
+
   ArduinoOTA
     .onStart([]() {
       String type;
@@ -190,14 +146,12 @@ void setupOTA(){
   ArduinoOTA.begin();
 }
 
-void setupSite(enum locations which){
+void setupSite(enum locations which){ // called at the end up SETUP
   if (which == longSiteLeft){
     setupLongSiteLeft();
   } else if (which == longSiteRight) {
     setupLongSiteRight();
-  } else if (which == shortSite) {
-    setupShortSite();
-  }
+  } 
 }
 
 void loopSite(enum locations which){
@@ -205,40 +159,118 @@ void loopSite(enum locations which){
     loopLongSiteLeft();
   } else if (which == longSiteRight) {
     loopLongSiteRight();
-  } else if (which == shortSite) {
-    loopShortSite();
   }
 }
 
 
 
 void setupLongSiteLeft() {
-  // for (int i = 0; i < 4){
-
+  // for (int i = 0; i < 4; i++){
+  //   ledstrips[i] = Adafruit_NeoPixel(NUMPIXSTRIP[i], LEDPINS[i], NEO_GRB + NEO_KHZ800);
+  //   ledstrips[i].begin();
   // }
   
+  
 }
+
 void setupLongSiteRight() {
+  // for (int i = 4; i < NUMSTRIPS; i++){
+  //   ledstrips[i] = Adafruit_NeoPixel(NUMPIXSTRIP[i], LEDPINS[i], NEO_GRB + NEO_KHZ800);
+  //   ledstrips[i].begin();
+  // }
 
 }
-void setupShortSite() {
 
-}
+
+// COMMON VARIABLES FOR LOOPS
+int CAPTOUCHTHRESH[] = {20,20,20}; // touch is true if below this value
+int capTouchVal[5];
+int activeToIndex[] = {0,0,0,0,0,0,0};
+bool isGrowing[] = {false,false,false,false,false};
+bool isFull[] = {false,false,false,false,false};
+
+
 void loopLongSiteLeft() {
+  
+  int junk = touchRead(CAPTOUCHPINS[0]); // the first reading on each loop tends to be bad
+  for (int i = 0; i < 3; i++){ // read each of the cap touch pins and run logic for corresponding finger
+    capTouchVal[i] = touchRead(CAPTOUCHPINS[i]);
+    if (capTouchVal[i] < CAPTOUCHTHRESH[i]){
+      isGrowing[i] = true;
+      activeToIndex[i] += 2;
+    } else {
+      isGrowing[i] = false;
+      activeToIndex[i] -= 2;
+    }
+  }
+  delay(20);
+
+  for(int m = 0; m < 3; m++){ // check indices for each finger
+    if(activeToIndex[m] > NUMPIXFINGER[m]){ // prevent exceeding numpix
+      activeToIndex[m] = NUMPIXFINGER[m];
+      isFull[m] = true;
+    } else if(activeToIndex[m] < 0){ // prevent negative index
+      activeToIndex[m] = 0;
+    } else {
+      isFull[m] = false; // if it is not at the end of the index it will drop in here
+    }
+  }
+  
+  for(int n = 0; n < 3; n++){ // update colors for each finger
+    for(int k=0; k < NUMPIXFINGER[n]; k++){ // set each pixel color
+      // Serial.print("about to call setPixelColorFinger with finger and pixel ");
+      // Serial.print(n);
+      // Serial.print(" ");
+      // Serial.println(k);
+      if(k < activeToIndex[n]){
+        setPixelColorFinger(n,k,100,0,0);
+      } else {
+        setPixelColorFinger(n,k,0,50,50);
+      }
+    }
+  }
+
+  // delay(100);
+  for(int j=0; j < 4; j++){
+    delay(20);
+    ledstrips[j].show();
+  }
 
 }
+
 void loopLongSiteRight() {
 
 }
-void loopShortSite() {
 
+void setPixelColorFinger(int finger, int i, int r, int g, int b){
+  switch(finger){
+    case 0: // Finger 1
+      ledstrips[0].setPixelColor(150 - i,r,g,b); // 
+      break;
+    case 1: // Finger 2
+      ledstrips[2].setPixelColor(121 - i,r,g,b); // 
+      break;
+    case 2: // Finger 3
+      ledstrips[3].setPixelColor(120 - i,r,g,b); // 
+      break;
+    case 3: // Finger 4
+      ledstrips[5].setPixelColor(134 - i,r,g,b); // 
+      break;
+    case 4: // Finger 5
+      ledstrips[6].setPixelColor(150 - i,r,g,b); // 
+      break;
+    default:
+    // this should not occur
+      break;
+  }
 }
 
-// CONSIDER THIS FROM OTABASIC
-  // while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-  //   Serial.println("Connection Failed! Rebooting...");
-  //   delay(5000);
-  //   ESP.restart();
+
+// CONSIDER THIS FROM OTABASIC TO RECONNET ON CONNECTION LOSS
+// while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+//   Serial.println("Connection Failed! Rebooting...");
+//   delay(5000);
+//   ESP.restart();
 
 // UNUSED ALTERNATIVE IMPLEMENTATION OF SELF-ID FUNCTION
 // bool isID_alt(int bit0, int bit1, int bit2){ 
