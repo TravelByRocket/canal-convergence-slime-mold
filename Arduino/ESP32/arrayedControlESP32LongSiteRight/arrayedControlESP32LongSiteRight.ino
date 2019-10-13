@@ -8,33 +8,32 @@ WiFiMulti wifiMulti;
 #include <ArduinoOTA.h>
 #include <bryanwifinetworks.h>
 
-const int NUMSTRIPS = 4;
-const int NUMFINGERS = 3;
+const int NUMSTRIPS = 3;
+const int NUMFINGERS = 2;
 const int NUMARMS = 2;
 
-const int CAPTOUCHPINS[] = {14,33,15}; // 14 and 15 match the board; S/W pin 33 is labeled pin 32 on HUZZAH32...
+const int CAPTOUCHPINS[] = {14,33}; // 14 and 15 match the board; S/W pin 33 is labeled pin 32 on HUZZAH32...
 // ... The pin seems like it could be jumping between 32 and 33 based on the libraries I have active. Possible?
-const int LEDPINS[] = {26,25,27,4}; // board labels A0,A1,27,A5
+const int LEDPINS[] = {26,27,4}; // board labels A0,27,A5
 
-// the number of pixels used on each strip 
-int NUMPIXSTRIP[] = {150, // Strip 1; all LEDs used
-                     150, // Strip 2; all LEDs used
-                     130, // Strip 3; 29 LEDs unused at end
-                     130}; // Strip 4; 30 LEDs unused at end
+// the number of pixels used on each strip
+int NUMPIXSTRIP[] = {132, // Strip 1; all LEDs used
+                     134, // Strip 2; all LEDs used
+                     150}; // Strip 3; 29 LEDs unused at end};
 // NOTE: Write to every pixel in order to erase any spurious signals
 
-int NUMPIXFINGER[] = {110,121,102}; // the number of pixels per finger
-int NUMPIXARM[] = {120,88}; // the number of pixels per arm section
+int NUMPIXFINGER[] = {134,140}; // the number of pixels per finger
+int NUMPIXARM[] = {76,56}; // the number of pixels per arm section
 
 CRGB ledstrips[NUMSTRIPS][150];
 
 int delayval = 25; // delay between loops in ms
 
-int CAPTOUCHTHRESH[] = {12,12,12}; // touch is true if below this value; decrease value of triggered without touch
+int CAPTOUCHTHRESH[] = {12,12}; // touch is true if below this value; decrease value of triggered without touch
 int capTouchVal[NUMFINGERS];
-int fingerActiveToIndex[] = {0,0,0};
-bool fingerIsGrowing[] = {false,false,false};
-bool fingerIsFull[] = {false,false,false};
+int fingerActiveToIndex[] = {0,0};
+bool fingerIsGrowing[] = {false,false};
+bool fingerIsFull[] = {false,false};
 
 void setup() {
   Serial.begin(115200);
@@ -43,22 +42,21 @@ void setup() {
   WiFi.mode(WIFI_STA);
   setupWiFiMulti(); // used to select from preferred networks as contained in my custom library file // NOTE: make a class?
   setupOTA(); // run function to enable over-the-air updating
-  
+
   FastLED.addLeds<NEOPIXEL, 26>(ledstrips[0],150);
-  FastLED.addLeds<NEOPIXEL, 25>(ledstrips[1],150);
-  FastLED.addLeds<NEOPIXEL, 27>(ledstrips[2],150);
-  FastLED.addLeds<NEOPIXEL,  4>(ledstrips[3],150);
+  FastLED.addLeds<NEOPIXEL, 27>(ledstrips[1],150);
+  FastLED.addLeds<NEOPIXEL,  4>(ledstrips[2],150);
 }
 
 void loop() {
   ArduinoOTA.handle();
-  loopLongSiteLeft();
-
+  loopLongSiteRight();
+  
   delay(delayval);
 }
 
 void setupOTA(){
-  ArduinoOTA.setHostname("esp32longSiteLeft");
+  ArduinoOTA.setHostname("esp32longSiteRight");
 
   ArduinoOTA
     .onStart([]() {
@@ -89,11 +87,10 @@ void setupOTA(){
   ArduinoOTA.begin();
 }
 
-void loopLongSiteLeft() {
+void loopLongSiteRight() {
   
 //  int junk = touchRead(CAPTOUCHPINS[0]); // the first reading on each loop tends to be bad so put in `junk` temp var
   for (int i = 0; i < NUMFINGERS; i++){ // read each of the cap touch pins and run logic for corresponding finger; one cap touch per finger
-//    capTouchVal[i] = touchRead(CAPTOUCHPINS[i]);
     capTouchVal[i] = digitalRead(CAPTOUCHPINS[i]);
     Serial.print("touchRead at pin ");
     Serial.print(CAPTOUCHPINS[i]);
@@ -103,7 +100,7 @@ void loopLongSiteLeft() {
   // delay(20);
 
   for (int p = 0; p < NUMFINGERS; p++){
-    if (capTouchVal[p]){
+    if (capTouchVal[p] == HIGH){
       fingerIsGrowing[p] = true;
       fingerActiveToIndex[p]++;
     } else {
@@ -146,14 +143,11 @@ void loopLongSiteLeft() {
 
 void setPixelColorFinger(int finger, int i, int r, int g, int b){
   switch(finger){
-    case 0: // Finger 1
-      ledstrips[0][150 - 1 - i].setRGB(r,g,b); // 
+    case 0: // Finger 4
+      ledstrips[1][150 - 1 - i].setRGB(r,g,b); // 
       break;
-    case 1: // Finger 2
-      ledstrips[2][121 - 1 - i].setRGB(r,g,b); // 
-      break;
-    case 2: // Finger 3
-      ledstrips[3][120 - 1 - i].setRGB(r,g,b); // 
+    case 1: // Finger 5
+      ledstrips[2][134 - 1 - i].setRGB(r,g,b); // 
       break;
     default:
       Serial.print("something went wrong");
@@ -163,18 +157,14 @@ void setPixelColorFinger(int finger, int i, int r, int g, int b){
 
 void setPixelColorArm(int arm, int i, int r, int g, int b){
   switch(arm){
-    case 0: // Arm 1
-      if(i < 40){
-        ledstrips[0][40 - i].setRGB(r,g,b); // 
-      } else {
-        ledstrips[1][i - 40].setRGB(r,g,b); // 
-      }
+    case 0: // Arm 3
+      ledstrips[0][132 - i].setRGB(r,g,b); // 
       break;
-    case 1: // Arm 2
-      if(i < 70){
-        ledstrips[1][i + 80].setRGB(r,g,b); // 
+    case 1: // Arm 4
+      if(i < 56){
+        ledstrips[0][56 - i].setRGB(r,g,b); // 
       } else {
-        ledstrips[3][i - 70].setRGB(r,g,b); // 
+        ledstrips[1][i - 56].setRGB(r,g,b); // 
       }
       break;
     default:
