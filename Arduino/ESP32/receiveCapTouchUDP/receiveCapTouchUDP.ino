@@ -15,14 +15,14 @@
 */
 
 
-#include <ESP8266WiFi.h>
+#include <WiFi.h>
 #include <WiFiUdp.h>
+#include <bryanwifinetworks.h>
 
-#include <wifitechwrangler.h> // imports String vars for SSID and PASS
 unsigned int localPort = 8052;      // local port to listen on
 
 // buffers for receiving and sending data
-char packetBuffer[UDP_TX_PACKET_MAX_SIZE + 1]; //buffer to hold incoming packet,
+char packetBuffer[3]; //buffer to hold incoming packet,
 
 WiFiUDP Udp;
 
@@ -30,14 +30,8 @@ void setup() {
   Serial.begin(115200);
   Serial.println("");
   WiFi.mode(WIFI_STA);
-  WiFi.begin(SSID, PASS);
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print('.');
-    delay(500);
-  }
-  Serial.print("Connected! IP address: ");
-  Serial.println(WiFi.localIP());
-  Serial.printf("UDP server on port %d\n", localPort);
+  setupWiFiMulti();
+
   Udp.begin(localPort);
 
   pinMode(LED_BUILTIN, OUTPUT);
@@ -54,7 +48,7 @@ void loop() {
 //                  ESP.getFreeHeap());
 
     // read the packet into packetBufffer
-    int n = Udp.read();
+    int n = Udp.read(packetBuffer,3);
     packetBuffer[n] = 0;
 //    Serial.println("Contents:");
     Serial.println(packetBuffer);
@@ -63,9 +57,9 @@ void loop() {
 
 //  String mess = packetBuffer.ToString
   if(packetBuffer[1] == '1' || millis() % 3000 < 50){
-    digitalWrite(LED_BUILTIN, LOW); // LED is on a Pull-up so turns on with LOW
+    digitalWrite(LED_BUILTIN, HIGH); // LED is on a Pull-up so turns on with LOW
   } else {
-    digitalWrite(LED_BUILTIN, HIGH);
+    digitalWrite(LED_BUILTIN, LOW);
   }
 
 }
