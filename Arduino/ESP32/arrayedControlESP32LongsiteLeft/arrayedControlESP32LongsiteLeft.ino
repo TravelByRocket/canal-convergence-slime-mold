@@ -1,19 +1,20 @@
 #include <FastLED.h>
-#include <ArduinoJson.h>
 #include <WiFi.h>
-#include <WiFiMulti.h>
-WiFiMulti wifiMulti;
-#include <ESPmDNS.h>
+//#include <WiFiMulti.h>
+//WiFiMulti wifiMulti; // must keep above bryanwifinetworks.h
+#include <ESPmDNS.h> // used by OTA
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-#include <bryanwifinetworks.h>
+//#include <bryanwifinetworks.h>
+#include <wifitechwrangler2.h>
+
+////////////////////////////////////////
+// LED SETUP START /////////////////////
+////////////////////////////////////////
 
 const int NUMSTRIPS = 4;
 const int NUMFINGERS = 3;
 const int NUMARMS = 2;
-
-const int CAPTOUCHPINS[] = {14,33,15}; // 14 and 15 match the board; S/W pin 33 is labeled pin 32 on HUZZAH32...
-// ... The pin seems like it could be jumping between 32 and 33 based on the libraries I have active. Possible?
 const int LEDPINS[] = {26,25,27,4}; // board labels A0,A1,27,A5
 
 // the number of pixels used on each strip 
@@ -28,34 +29,32 @@ int NUMPIXARM[] = {120,88}; // the number of pixels per arm section
 
 CRGB ledstrips[NUMSTRIPS][150];
 
+////////////////////////////////////////
+// GENERAL SETTINGS START //////////////
+////////////////////////////////////////
+
 int delayval = 25; // delay between loops in ms
 
-int CAPTOUCHTHRESH[] = {12,12,12}; // touch is true if below this value; decrease value of triggered without touch
-int capTouchVal[NUMFINGERS];
 int fingerActiveToIndex[] = {0,0,0};
 bool fingerIsGrowing[] = {false,false,false};
 bool fingerIsFull[] = {false,false,false};
 
-void setup() {
-  Serial.begin(115200);
-  Serial.println(""); //get out of the way of the line of repeating `?`
+////////////////////////////////////////
+// UDP SETUP START /////////////////////
+////////////////////////////////////////
 
-  WiFi.mode(WIFI_STA);
-  setupWiFiMulti(); // used to select from preferred networks as contained in my custom library file // NOTE: make a class?
-  setupOTA(); // run function to enable over-the-air updating
-  
-  FastLED.addLeds<NEOPIXEL, 26>(ledstrips[0],150);
-  FastLED.addLeds<NEOPIXEL, 25>(ledstrips[1],150);
-  FastLED.addLeds<NEOPIXEL, 27>(ledstrips[2],150);
-  FastLED.addLeds<NEOPIXEL,  4>(ledstrips[3],150);
-}
+unsigned int localPort = 8052;
+const int packetSize = 6; // 'fxyyyy' format is 6 plus null terminator
+char packetBuffer[packetSize + 1]; //buffer to hold incoming packet,
+char  ReplyBuffer[] = "acknowledged\0"; // a string to send back // 12 chars + terminator => 13
+char  ReplyBuffer2[] = "heartbeat...\0"; // a string to send back // 12 chars + terminator => 13
+const char * addressLongSiteRight = "192.168.0.101";
 
-void loop() {
-  ArduinoOTA.handle();
-  loopLongSiteLeft();
+WiFiUDP Udp;
 
-  delay(delayval);
-}
+////////////////////////////////////////
+// CUSTOM FUNCTIONS AT TOP (?BETA IDE BUG?)
+////////////////////////////////////////
 
 void setupOTA(){
   ArduinoOTA.setHostname("esp32longSiteLeft");
@@ -87,61 +86,6 @@ void setupOTA(){
     });
 
   ArduinoOTA.begin();
-}
-
-void loopLongSiteLeft() {
-  
-//  int junk = touchRead(CAPTOUCHPINS[0]); // the first reading on each loop tends to be bad so put in `junk` temp var
-  for (int i = 0; i < NUMFINGERS; i++){ // read each of the cap touch pins and run logic for corresponding finger; one cap touch per finger
-//    capTouchVal[i] = touchRead(CAPTOUCHPINS[i]);
-    capTouchVal[i] = digitalRead(CAPTOUCHPINS[i]);
-    Serial.print("touchRead at pin ");
-    Serial.print(CAPTOUCHPINS[i]);
-    Serial.print(" is ");
-    Serial.println(capTouchVal[i]);
-  }
-  // delay(20);
-
-  for (int p = 0; p < NUMFINGERS; p++){
-    if (capTouchVal[p]){
-      fingerIsGrowing[p] = true;
-      fingerActiveToIndex[p]++;
-    } else {
-      fingerIsGrowing[p] = false;
-      fingerActiveToIndex[p]--;
-    }  
-  }
-  
-  for(int m = 0; m < NUMFINGERS; m++){ // check indices for each finger
-    if(fingerActiveToIndex[m] > NUMPIXFINGER[m]){ // prevent exceeding numpix
-      fingerActiveToIndex[m] = NUMPIXFINGER[m];
-      fingerIsFull[m] = true;
-    } else if(fingerActiveToIndex[m] < 0){ // prevent negative index
-      fingerActiveToIndex[m] = 0;
-    } else {
-      fingerIsFull[m] = false; // if it is not at the end of the index it will drop in here
-    }
-  }
-  
-  for(int n = 0; n < NUMFINGERS; n++){ // update colors for each finger
-    for(int k=0; k < NUMPIXFINGER[n]; k++){ // set each pixel color
-      if(k < fingerActiveToIndex[n]){
-        setPixelColorFinger(n,k,100,0,0);
-      } else {
-        setPixelColorFinger(n,k,0,50,50);
-      }
-    }
-  }
-
-  for(int r=0; r<NUMARMS; r++){
-    for(int s=0; s<NUMPIXARM[r]; s++){
-      setPixelColorArm(r,s,0,50*(1-r),50*r);
-    }
-  }
-
-  delay(20);
-  FastLED.show();
-
 }
 
 void setPixelColorFinger(int finger, int i, int r, int g, int b){
@@ -183,33 +127,140 @@ void setPixelColorArm(int arm, int i, int r, int g, int b){
   }
 }
 
+void loopLongSiteLeft() {
+
+// GET TOUCH VALUES HERE
+
+//UNCOMMENT THIS SECTION WHEN ABLE TO PROCESS UDP
+  for (int p = 0; p < NUMFINGERS; p++){
+    if (fingerIsGrowing[p]){
+      fingerActiveToIndex[p]++;
+    } else {
+      fingerActiveToIndex[p]--;
+    }  
+  }
+  
+  for(int m = 0; m < NUMFINGERS; m++){ // check indices for each finger
+    if(fingerActiveToIndex[m] > NUMPIXFINGER[m]){ // prevent exceeding numpix
+      fingerActiveToIndex[m] = NUMPIXFINGER[m];
+      fingerIsFull[m] = true;
+    } else if(fingerActiveToIndex[m] < 0){ // prevent negative index
+      fingerActiveToIndex[m] = 0;
+    } else {
+      fingerIsFull[m] = false; // if it is not at the end of the index it will drop in here
+    }
+  }
+  
+  for(int n = 0; n < NUMFINGERS; n++){ // update colors for each finger
+    for(int k=0; k < NUMPIXFINGER[n]; k++){ // set each pixel color
+      if(k < fingerActiveToIndex[n]){
+        setPixelColorFinger(n,k,100,0,0);
+      } else {
+        setPixelColorFinger(n,k,0,50,50);
+      }
+    }
+  }
+
+  for(int r=0; r<NUMARMS; r++){
+    for(int s=0; s<NUMPIXARM[r]; s++){
+      setPixelColorArm(r,s,0,50*(1-r),50*r);
+    }
+  }
+
+  delay(20);
+  FastLED.show();
+
+}
+
+void handleIncomingUDP(){
+  int packetSize = Udp.parsePacket();
+  if (packetSize) {
+    int n = Udp.read(packetBuffer, packetSize);
+    Udp.read(packetBuffer, packetSize);
+    packetBuffer[n] = 0;
+    Serial.print("Contents: ");
+    Serial.print(packetBuffer);
+    Serial.print("... at millis()%10000 of ");
+    Serial.print(millis()%10000); 
+    Serial.println("");
+
+    // strings from finger 1
+    if(packetBuffer[0] == 'f' && packetBuffer[1] == '1' && packetBuffer[2] == '0'){
+      fingerIsGrowing[0] = false;
+    } else if (packetBuffer[0] == 'f' && packetBuffer[1] == '1' && packetBuffer[2] == '1'){
+      fingerIsGrowing[0] = true;
+    } else {
+//      Serial.println("Not finger 1");
+    }
+
+    // strings from finger 2
+    if(packetBuffer[0] == 'f' && packetBuffer[1] == '2' && packetBuffer[2] == '0'){
+      fingerIsGrowing[1] = false;
+    } else if (packetBuffer[0] == 'f' && packetBuffer[1] == '2' && packetBuffer[2] == '1'){
+      fingerIsGrowing[1] = true;
+    } else {
+//      Serial.println("Not finger 2");
+    }
+
+    // strings from finger 3
+    if(packetBuffer[0] == 'f' && packetBuffer[1] == '3' && packetBuffer[2] == '0'){
+      fingerIsGrowing[2] = false;
+    } else if (packetBuffer[0] == 'f' && packetBuffer[1] == '3' && packetBuffer[2] == '1'){
+      fingerIsGrowing[2] = true;
+    } else {
+//      Serial.println("Not finger 3");
+    }
+    
+  }
+}
+
+void sendToLongSiteRight(){
+    Udp.beginPacket(addressLongSiteRight,localPort);
+//    Udp.write(ReplyBuffer);
+    Udp.write((const uint8_t*)ReplyBuffer, 12); // keep until the line above is working
+//    Udp.write((const uint8_t*)ReplyBuffer); // keep until the line above is working
+    Udp.endPacket();
+}
+
+////////////////////////////////////////
+// MAIN CODE START /////////////////////
+////////////////////////////////////////
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println(""); //get out of the way of the line of repeating `?`
+
+  WiFi.mode(WIFI_STA);
+//  setupWiFiMulti(); // used to select from preferred networks as contained in my custom library file // NOTE: make a class?
+  WiFi.begin(SSID.c_str(),PASS.c_str());
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  setupOTA(); // run function to enable over-the-air updating
+  
+  FastLED.addLeds<NEOPIXEL, 26>(ledstrips[0],150);
+  FastLED.addLeds<NEOPIXEL, 25>(ledstrips[1],150);
+  FastLED.addLeds<NEOPIXEL, 27>(ledstrips[2],150);
+  FastLED.addLeds<NEOPIXEL,  4>(ledstrips[3],150);
+
+  Udp.begin(localPort);
+}
+
+void loop() {
+  ArduinoOTA.handle();
+  handleIncomingUDP();
+  loopLongSiteLeft();
+  delay(delayval);
+}
 
 // CONSIDER THIS FROM OTABASIC TO RECONNET ON CONNECTION LOSS
 // while (WiFi.waitForConnectResult() != WL_CONNECTED) {
 //   Serial.println("Connection Failed! Rebooting...");
 //   delay(5000);
 //   ESP.restart();
-
-// UNUSED ALTERNATIVE IMPLEMENTATION OF SELF-ID FUNCTION
-// bool isID_alt(int bit0, int bit1, int bit2){ 
-//   int IDbits = 3;
-//   int bitID[] = {bit0,bit1,bit2};
-//   bool bitMatches[IDbits];
-
-//   for (int i = 0; i < IDbits; i++){
-//     if (bitID[i] = digitalRead(SELFIDPINS[i])){
-//       bitMatches[i] = true;
-//     } else {
-//       bitMatches[i] = false;
-//     }
-//   }
-
-//   for (int j = 0; j < IDbits; j++){
-//     if (bitMatches[0] && bitMatches[1] && bitMatches[2]){
-//       return true;
-//     } else {
-//       return false
-//     }
-//   }
-
-// }
