@@ -57,7 +57,7 @@ WiFiUDP Udp;
 ////////////////////////////////////////
 
 void setupOTA(){
-  ArduinoOTA.setHostname("esp32longSiteLeft");
+  ArduinoOTA.setHostname("longSiteLeft");
 
   ArduinoOTA
     .onStart([]() {
