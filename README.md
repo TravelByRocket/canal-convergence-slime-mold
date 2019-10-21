@@ -21,7 +21,7 @@ IP Addresses are reserved as
 - 192.168.0.**102** for ShortSite
 - 192.168.0.**103** for Medallion
 
-See the Hardware Map for additional context.
+![hardware layout and details](https://github.com/TravelByRocket/canal-convergence-interactive-sculpture-2019/blob/master/Hardware%20Map.png)
 
 ## Test Color Temporarily
 The controllers recognize basic commands sent by short UDP strings with strict formatting restrictions. 
