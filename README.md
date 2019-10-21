@@ -11,7 +11,7 @@ Boards to Install
 
 Boards to Select
 - LongSiteLeft, LongSiteRight, ShortSite are "Adafruit HUAZZAH32" or something like that
-- Medallion is "Adfaruit HUZZAH8266" or something like that
+- Medallion is "Adafruit HUZZAH8266" or something like that
 - Each capacitive touch finger sensor board is a WEMOS D1 mini (not Pro or Lite)
 
 ## IP Addresses
@@ -30,7 +30,7 @@ The controllers recognize basic commands sent by short UDP strings with strict f
 #### From a Mac
 Open Terminal and type `nc -u 192.168.0.xxx 8052` where 
 - `nc` is sort of a Terminal program for sending network messages
-- `-u` specifies UDP protocal
+- `-u` specifies UDP protocol
 - `xxx` is specific to each controller (see above)
 - `8052` is the port that each controller is listening on. 
 
@@ -60,4 +60,4 @@ October 20, 2019 -- Only the colors can be changed by UDP message. The format to
 - `--g---` same as above but for green
 - `--b---` same as above but for blue
 - `cab100` specifies a value of 100 for blue component of the initial color, for example
-- Note that all commands ust be six characters long, so color values les than 100 must be zero-padded, like `050`, for example
+- Note that all commands must be six characters long, so color values les than 100 must be zero-padded, like `050`, for example
