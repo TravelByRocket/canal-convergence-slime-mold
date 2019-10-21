@@ -91,11 +91,13 @@ void loop()
   }
   lastState = beingTouched;
 
-  if (changedState || millis() - lastSendTime > reminderTime){ // send state if it is different than it was last loop or if reminderTime has elapsed
-    sendState();
-    lastSendTime = millis();
-  }
+//  if (changedState || millis() - lastSendTime > reminderTime){ // send state if it is different than it was last loop or if reminderTime has elapsed
+//    sendState();
+//    lastSendTime = millis();
+//  }
 
+  sendState();
+  delay(100);
   ArduinoOTA.handle();
   
 }
