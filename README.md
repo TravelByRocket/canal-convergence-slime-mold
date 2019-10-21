@@ -16,12 +16,12 @@ A touch-responsive inflatable sculpture for the 2019 Canal Convergence event in 
 
 ## IP Addresses
 IP Addresses are reserved as
-- 192.168.0.100 for LongSiteLeft
-- 192.168.0.101 for LongSiteRight
-- 192.168.0.102 for ShortSite
-- 192.168.0.103 for Medallion
+- 192.168.0.**100** for LongSiteLeft
+- 192.168.0.**101** for LongSiteRight
+- 192.168.0.**102** for ShortSite
+- 192.168.0.**103** for Medallion
 
-See the hardware diagram for additional context.
+See the Hardware Map for additional context.
 
 ## Test Color Temporarily
 The controllers recognize basic commands sent by short UDP strings with strict formatting restrictions. 
