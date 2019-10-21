@@ -48,16 +48,20 @@ October 20, 2019 -- Only the colors can be changed by UDP message. The format to
 - `--g---` same as above but for green
 - `--b---` same as above but for blue
 - `cib100` specifies a value of 100 for blue component of the inner color, for example
-- Note that all commands ust be six characters long, so color values les than 100 must be zero-padded, like `050`, for example 
+- Note that all commands must be six characters long, so color values less than 100 must be zero-padded, like `050`, for example 
 - `000000` resets the board to recover initial settings
 
 ### Change LongSiteLeft, LongSiteRight, ShortSite
 - `c-----` the `c` prefix is used to indicate a color command
 - `-a----` the `a` indicates that changes will apply to the initial/resting color ("toxic" green in this case)
 - `-b----` the `b` same as above but for secondary/activated color (reddish in this case)
-- `-c----` the `c` same as above but for tertiary color (turqoise in this case)
+- `-c----` the `c` same as above but for tertiary color (turquoise in this case)
 - `--r---` changes the red value of the RGB color, accepts 0-255 (but possibly a bug limiting some values)
 - `--g---` same as above but for green
 - `--b---` same as above but for blue
 - `cab100` specifies a value of 100 for blue component of the initial color, for example
-- Note that all commands must be six characters long, so color values les than 100 must be zero-padded, like `050`, for example
+- Note that all commands must be six characters long, so color values less than 100 must be zero-padded, like `050`, for example
+
+## Other Notes
+
+The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important as the code is written at the moment except as a confirmation of uploading the correct fie with over-the-air updates.
