@@ -64,4 +64,4 @@ October 20, 2019 -- Only the colors can be changed by UDP message. The format to
 
 ## Other Notes
 
-The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important as the code is written at the moment except as a confirmation of uploading the correct fie with over-the-air updates.
+The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important as the code is written at the moment except as a confirmation of uploading the correct file with over-the-air updates.
