@@ -1,12 +1,28 @@
 #include <FastLED.h>
 #include <WiFi.h>
-//#include <WiFiMulti.h>
-//WiFiMulti wifiMulti; // must keep above bryanwifinetworks.h
 #include <ESPmDNS.h> // used by OTA
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-//#include <bryanwifinetworks.h>
 #include <wifitechwrangler2.h>
+
+////////////////////////////////////////
+// COLORS //////////////////////////////
+////////////////////////////////////////
+
+// initial 'a' greenish color
+int aRed = 33;
+int aGre = 67;
+int aBlu = 0;
+
+// second 'b' reddish color
+int bRed = 85;
+int bGre = 15;
+int bBlu = 0;
+
+// third 'c' turqoise color
+int cRed = 0;
+int cGre = 70;
+int cBlu = 30;
 
 ////////////////////////////////////////
 // LED SETUP START /////////////////////
@@ -151,16 +167,27 @@ void loopLongSiteLeft() {
   for(int n = 0; n < NUMFINGERS; n++){ // update colors for each finger
     for(int k=0; k < NUMPIXFINGER[n]; k++){ // set each pixel color
       if(k < fingerActiveToIndex[n]){
-        setPixelColorFinger(n,k,100,0,0);
+        setPixelColorFinger(n,k,bRed,bGre,bBlu);
       } else {
-        setPixelColorFinger(n,k,0,50,50);
+        setPixelColorFinger(n,k,aRed,aGre,aBlu);
       }
     }
   }
 
-  for(int r=0; r<NUMARMS; r++){
+  for(int r=0; r<NUMARMS; r++){ // this makes it color a by default, color b is an adjacent 
+    // ... finger is active, and c if both adjacent fingers are active
+    // need to make it travel to midway before stopping and then treat the meeting point as where the turqoise starts
     for(int s=0; s<NUMPIXARM[r]; s++){
-      setPixelColorArm(r,s,0,50*(1-r),50*r);
+      if(fingerIsFull[r] && fingerIsFull[r+1]){
+        setPixelColorArm(r,s,cRed,cGre,cBlu);
+      } else if (fingerIsFull[r] || fingerIsFull[r+1]){
+        setPixelColorArm(r,s,bRed,bGre,bBlu);
+      } else {
+        setPixelColorArm(r,s,aRed,aGre,aBlu);
+      }
+
+      //
+      
     }
   }
 
@@ -200,11 +227,35 @@ void handleIncomingUDP(){
     }
 
     // strings from finger 3
-    if(packetBuffer[0] == 'f' && packetBuffer[1] == '1'){ // if it is finger 3
+    if(packetBuffer[0] == 'f' && packetBuffer[1] == '3'){ // if it is finger 3
       if(packetBuffer[2] == '1'){ // 1 in the thousands place if touch is sensed; this is a workaround for issues with sending continuous number values
         fingerIsGrowing[2] = true;
       } else if (packetBuffer[2] == '0'){
         fingerIsGrowing[2] = false;
+      }
+    }
+
+    if(packetBuffer[0] == 'c'){ // c for color
+      int colorVal = (int(packetBuffer[3] - '0') * 100) 
+                   + (int(packetBuffer[4] - '0') * 10) 
+                   + (int(packetBuffer[5] - '0')); // convert characters to a 0-255 integer
+      if(packetBuffer[1] == 'a' && colorVal >= 0 && colorVal <= 255){ // if for initial green/toxic color 'a'
+        if       (packetBuffer[2] == 'r'){aRed = colorVal;
+        } else if(packetBuffer[2] == 'g'){aGre = colorVal;
+        } else if(packetBuffer[2] == 'b'){aBlu = colorVal;
+        }
+      }
+      if(packetBuffer[1] == 'b' && colorVal >= 0 && colorVal <= 255){ // if for second reddish color 'b'
+        if       (packetBuffer[2] == 'r'){bRed = colorVal;
+        } else if(packetBuffer[2] == 'g'){bGre = colorVal;
+        } else if(packetBuffer[2] == 'b'){bBlu = colorVal;
+        }
+      }
+      if(packetBuffer[1] == 'c' && colorVal >= 0 && colorVal <= 255){ // if for third turquise color 'c'
+        if       (packetBuffer[2] == 'r'){cRed = colorVal;
+        } else if(packetBuffer[2] == 'g'){cGre = colorVal;
+        } else if(packetBuffer[2] == 'b'){cBlu = colorVal;
+        }
       }
     }
     
@@ -228,7 +279,6 @@ void setup() {
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
   WiFi.mode(WIFI_STA);
-//  setupWiFiMulti(); // used to select from preferred networks as contained in my custom library file // NOTE: make a class?
   WiFi.begin(SSID.c_str(),PASS.c_str());
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
