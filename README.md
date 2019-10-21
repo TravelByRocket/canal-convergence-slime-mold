@@ -2,14 +2,14 @@
 A touch-responsive inflatable sculpture for the 2019 Canal Convergence event in Scottsdale, AZ, November 8-15. A collaboration between the artist [Nicole Banowetz](http://www.nicolebanowetz.com) and technologist [Bryan Costanza](http://somuchscience.com/).
 
 ## Arduino IDE Setup
-Libraries to Install
+### Libraries to Install
 - FastLED
 
-Boards to Install
+### Boards to Install
 - ESP8266 `https://arduino.esp8266.com/stable/package_esp8266com_index.json`
 - ESP32 `https://dl.espressif.com/dl/package_esp32_index.json`
 
-Boards to Select
+### Boards to Select on Upload
 - LongSiteLeft, LongSiteRight, ShortSite are "Adafruit HUAZZAH32" or something like that
 - Medallion is "Adafruit HUZZAH8266" or something like that
 - Each capacitive touch finger sensor board is a WEMOS D1 mini (not Pro or Lite)
