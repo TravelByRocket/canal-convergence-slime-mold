@@ -51,7 +51,7 @@ October 20, 2019 -- Only the colors can be changed by UDP message. The format to
 - Note that all commands must be six characters long, so color values less than 100 must be zero-padded, like `050`, for example 
 - `000000` resets the board to recover initial settings
 
-### Change LongSiteLeft, LongSiteRight, ShortSite
+### Change LongSiteLeft, LongSiteRight, & ShortSite
 - `c-----` the `c` prefix is used to indicate a color command
 - `-a----` the `a` indicates that changes will apply to the initial/resting color ("toxic" green in this case)
 - `-b----` the `b` same as above but for secondary/activated color (reddish in this case)
