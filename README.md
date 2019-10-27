@@ -79,7 +79,7 @@ The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards2.jpg)
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards3.jpg)
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards4.jpg)
-![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards5%20copy.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards5%20copy.jpeg)
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards6.jpg)
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards7.jpg)
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards8.jpg)
