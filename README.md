@@ -23,7 +23,7 @@ IP Addresses are reserved as
 - 192.168.0.**102** for ShortSite
 - 192.168.0.**103** for Medallion
 
-![hardware layout and details](https://github.com/TravelByRocket/canal-convergence-interactive-sculpture-2019/blob/master/Hardware%20Map.png)
+![hardware layout and details](Hardware%20Map.png)
 
 ## Test Color Temporarily
 The controllers recognize basic commands sent by short UDP strings with strict formatting restrictions. 
@@ -69,3 +69,6 @@ October 20, 2019 -- Only the colors can be changed by UDP message. The format to
 The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important as the code is written at the moment except as a confirmation of uploading the correct file with over-the-air updates.
 
 # Documentation
+
+![cap touch working 1](Documentation/cap%20touch%20working%20screenshot%201.png)
+![cap touch working 2](/Documentation/cap%20touch%20working%20screenshot%202.png)
