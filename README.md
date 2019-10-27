@@ -79,7 +79,7 @@ The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards2.jpg)
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards3.jpg)
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards4.jpg)
-![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards5%20copy.jpeg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards5%20copy.jpg)
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards6.jpg)
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards7.jpg)
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards8.jpg)
@@ -90,3 +90,29 @@ The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards13.jpg)
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards14.jpg)
 ![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards15.jpg)
+
+## Lessons Learned
+- Use Feather version of HUZAAH8266 (multiple button presses for update and reseton simple breakout)
+- Plan interaction earlier for streamlined coding approach, including LED mapping and referencing method
+- Identify SMEs at project start for checks and technical problem resolution
+- Run a design review early (and possibly repeatedly)
+- NeoPixel library worked well with ESP8266 but needed FastLED for ESP32
+- Store wifi credentials securely in a library
+
+## Future Development
+- Object-oriented control of fingers and filements
+- Improved status reporting for send/recieve messages
+- String in and String out for UDP communication to avoid complexities of data types in C++
+- Unified code for multiple MCUs (not managing code for every similar instance); at least import a librarylike file that unifies most of the code
+- Webpage-based status and controls, including streamlined color testing
+- FastLED index checking (complete crash when on `.show()` after setting an invalid index)
+- Utilize router broadcast address to simplifiy send/recieve of messages, run automatic setup, and/or avoid complexity of storing multiple IP addresses which forces nearly-identical sketches for multiple boards
+- More verbose (and standardized through my own library) output of Wifi connection status (no error was reported when not successfully connecting to Wifi)
+
+## Open Issues
+- Capacitive touch interference source and mitigation
+- MultiWifi stuck on network login (it worked for weeks and then consistently failed one day on both ESP8226 and ESP32)
+- How to compile selectively for ESP8266 and ESP32 (briefly attempted unsuccessfully)l
+- Source of compilation differences for ESP8266/32 (e.g. using `SSID.c_str()` and `PASS.c_str()` for only ESP32)
+- Generating strings or char arrays on ESP8266 (experienced severe memory access issues)
+- Many conversion issues around items like `.c_str()`, `uint8_t`, `char array`, pointers `*`, copies `&`
