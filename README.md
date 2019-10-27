@@ -1,5 +1,7 @@
 # Canal Convergence Interactive Sculpture
-A touch-responsive inflatable sculpture for the 2019 Canal Convergence event in Scottsdale, AZ, November 8-15. A collaboration between the artist [Nicole Banowetz](http://www.nicolebanowetz.com) and technologist [Bryan Costanza](http://somuchscience.com/).
+A touch-responsive inflatable sculpture for the 2019 Canal Convergence event in Scottsdale, AZ, November 8-15. A collaboration between artist [Nicole Banowetz](http://www.nicolebanowetz.com) and technologist [Bryan Costanza](http://somuchscience.com/).
+
+[Jump to Documentation](#documentation)
 
 ## Arduino IDE Setup
 ### Libraries to Install
@@ -65,3 +67,5 @@ October 20, 2019 -- Only the colors can be changed by UDP message. The format to
 ## Other Notes
 
 The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important as the code is written at the moment except as a confirmation of uploading the correct file with over-the-air updates.
+
+# Documentation
