@@ -70,5 +70,23 @@ The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important
 
 # Documentation
 
+![inflation time lapse](Documentation/inflationtimelapse.mov)
+
 ![cap touch working 1](Documentation/cap%20touch%20working%20screenshot%201.png)
 ![cap touch working 2](/Documentation/cap%20touch%20working%20screenshot%202.png)
+
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards1.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards2.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards3.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards4.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards5.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards6.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards7.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards8.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards9.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards10.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards11.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards12.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards13.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards14.jpg)
+![cap touch boards](DocumentationCapTouchBoardsOct19/captouchboards15.jpg)
