@@ -98,6 +98,7 @@ The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important
 - Run a design review early (and possibly repeatedly)
 - NeoPixel library worked well with ESP8266 but needed FastLED for ESP32
 - Store wifi credentials securely in a library
+- The HUZZAH8266 seems to not have enough current available on the pins for reliable two-pin capacitive touch sensing; it showed only a few bits' worth of resolution
 
 ## Future Development
 - Object-oriented control of fingers and filements
