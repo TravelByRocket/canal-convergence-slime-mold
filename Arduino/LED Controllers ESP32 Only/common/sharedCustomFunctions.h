@@ -75,16 +75,16 @@ void startUDP(){
 // READ AND STORE MESSAGE //////////////
 ////////////////////////////////////////
 
-void readAndStoreMessage(){
-	int n = Udp.read(packetBuffer, packetSize);
-    Udp.read(packetBuffer, packetSize);
-    packetBuffer[n] = 0;
-    Serial.print("Contents: ");
-    Serial.print(packetBuffer);
-    Serial.print("... at millis()%10000 of ");
-    Serial.print(millis()%10000); 
-    Serial.println("");
-}
+// void readAndStoreMessage(){
+// 	int n = Udp.read(packetBuffer, packetSize);
+//     Udp.read(packetBuffer, packetSize);
+//     packetBuffer[n] = 0;
+//     Serial.print("Contents: ");
+//     Serial.print(packetBuffer);
+//     Serial.print("... at millis()%10000 of ");
+//     Serial.print(millis()%10000); 
+//     Serial.println("");
+// }
 
 ////////////////////////////////////////////////
 // CONVERT FUNCTIONAL INDICES TO LED INDICES ///
@@ -176,16 +176,17 @@ void filament2stripRGB(int filament, int i, int r, int g, int b){
 }
 
 void breatheYellowGreen(){
-	int breathProgressPercent;
-	if (millis() < breathPeriodMs){
-		breathProgressPercent = 100 * (                 (millis() % breathPeriodMs) / (breathPeriodMs / 2));
+
+	float breathProgressPercent; // decimal representation
+	if(millis() % breathPeriodMs < breathPeriodMs/2){
+		breathProgressPercent =                       (millis() % (breathPeriodMs/2))  / (float)(breathPeriodMs / 2);
 	} else {
-		breathProgressPercent = 100 * (breathPeriodMs - (millis() % breathPeriodMs) / (breathPeriodMs / 2));
+		breathProgressPercent = ((breathPeriodMs/2) - (millis() % (breathPeriodMs/2))) / (float)(breathPeriodMs / 2);
 	}
 
-	aRed = (a1Red * breathProgressPercent) / 100 + (a2Red * (100 - breathProgressPercent) / 100);
-	aGre = (a1Gre * breathProgressPercent) / 100 + (a2Gre * (100 - breathProgressPercent) / 100);
-	aBlu = (a1Blu * breathProgressPercent) / 100 + (a2Blu * (100 - breathProgressPercent) / 100);
+	aRed = (a1Red * breathProgressPercent) + (a2Red * (1 - breathProgressPercent));
+	aGre = (a1Gre * breathProgressPercent) + (a2Gre * (1 - breathProgressPercent));
+	aBlu = (a1Blu * breathProgressPercent) + (a2Blu * (1 - breathProgressPercent));
 }
 
 void processTouchCommand(){

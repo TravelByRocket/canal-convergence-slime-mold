@@ -109,8 +109,8 @@ int cBlu = 30;
 // GENERAL SETTINGS START //////////////
 ////////////////////////////////////////
 
-int breathePeriodSec = 60;
-int breathPeriodMs = breathePeriodSec * 1000; // time in msec for full rotation through color
+int breathPeriodSec = 60;
+int breathPeriodMs = breathPeriodSec * 1000; // time in msec for full rotation through color
 int delayval = 25; // delay between loops in ms
 
 ////////////////////////////////////////
@@ -121,7 +121,7 @@ unsigned int localPort = 8052;
 const int packetSize = 6; // 'fxyyyy' format is 6 plus null terminator
 char packetBuffer[packetSize + 1]; //buffer to hold incoming packet
 // 12 chars + terminator => 13
-char msgIsEmptyFinger3ColorB[]    = "f3b000\0"; // send to longSiteRight when Finger 3 is not full of ColorB 
+char msgIsEmptyFinger3ColorB[]   = "f3b000\0"; // send to longSiteRight when Finger 3 is not full of ColorB 
 char msgIsFullFinger3ColorB[]    = "f3B000\0"; // send to longSiteRight when Finger 3 is full of ColorB 
 char msgIsEmptyFilament5ColorB[] = "g5b000\0"; // send to longSiteLeft when Filament 5 is empty of ColorB
 char msgIsFullFilament5ColorB[]  = "g5B000\0"; // send to longSiteLeft when Filament 5 is not empty of ColorB

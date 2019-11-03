@@ -18,9 +18,16 @@ void setup() {
   startUDP();
 }
 
+unsigned long lastSendTime = 0;
 void loop() {
   handleIncomingUDP();
   handleGrowingShrinking();
+
+  if(millis() - lastSendTime > 150){
+    sendOutStatuses();
+    lastSendTime = millis();
+  }
+  
   handleColoring();
 
   ArduinoOTA.handle();
@@ -182,12 +189,71 @@ void handleColoring(){
 }
 
 void handleIncomingUDP(){
-  int packetSize = Udp.parsePacket();
+  int packetSize = Udp.parsePacket(); // this variable is redefined here for some reason and moving the code below to its own function destroys the delicate balance of power here
   if (packetSize) {
-    readAndStoreMessage(); // stores in packetBufer
+    // readAndStoreMessage(); // stores in packetBufer
+    int n = Udp.read(packetBuffer, packetSize);
+    Udp.read(packetBuffer, packetSize);
+    packetBuffer[n] = 0;
+    Serial.print("Contents: ");
+    Serial.print(packetBuffer);
+    Serial.print("... at millis()%10000 of ");
+    Serial.print(millis()%10000); 
+    Serial.println("");
     processTouchCommand();
     processColorCommand();
+    processSystemCommand();
   }
+}
+
+void sendOutStatuses(){
+
+  // NOTE this should only send when there are changes or for heartbeat updates but writing it here for now
+  // I will temporarily limit this to run on a set interval that will hopefully not be noticed for now until I make a nicer reporting system
+
+  // msgIsEmptyFinger3ColorB[] = "f3b000\0" send to longSiteRight when Finger 3 is not full of ColorB 
+  if(!isFullFingerColorB[2]){
+    Udp.beginPacket(addressLongSiteRight,localPort);
+    Udp.write((const uint8_t*)msgIsEmptyFinger3ColorB, packetSize+1);
+    Udp.endPacket();  
+  }
+  
+  // char msgIsFullFinger3ColorB[]    = "f3B000\0"; // send to longSiteRight when Finger 3 is full of ColorB 
+  if(isFullFingerColorB[2]){
+    Udp.beginPacket(addressLongSiteRight,localPort);
+    Udp.write((const uint8_t*)msgIsFullFinger3ColorB, packetSize+1);
+    Udp.endPacket();  
+  }
+  
+  //// FUNCTIONS FOR RIGHTSIDE
+  // // char msgIsEmptyFilament5ColorB[] = "g5b000\0"; // send to longSiteLeft when Filament 5 is empty of ColorB
+  // if(isEmptyFilamentColorB[4]){
+  //   Udp.beginPacket(addressLongSiteLeft,localPort);
+  //   Udp.write((const uint8_t*)msgIsEmptyFilament5ColorB, packetSize+1);
+  //   Udp.endPacket();  
+  // }
+  
+  // // char msgIsFullFilament5ColorB[]  = "g5B000\0"; // send to longSiteLeft when Filament 5 is not empty of ColorB
+  // if(!isEmptyFilamentColorB[4]){
+  //   Udp.beginPacket(addressLongSiteLeft,localPort);
+  //   Udp.write((const uint8_t*)msgIsFullFilament5ColorB, packetSize+1);
+  //   Udp.endPacket();  
+  // }
+
+  // // char msgIsEmptyFilament5ColorC[] = "g5c000\0"; // send to longSiteLeft when Filament 5 is not full of ColorC
+  // if(!isFullFilamentColorC[4]){
+  //   Udp.beginPacket(addressLongSiteLeft,localPort);
+  //   Udp.write((const uint8_t*)msgIsEmptyFilament5ColorC, packetSize+1);
+  //   Udp.endPacket();  
+  // }
+
+  // // char msgIsFullFilament5ColorC[]  = "g5C000\0"; // send to longSiteLeft when Filament 5 is full of ColorC
+  // if(isFullFilamentColorC[4]){
+  //   Udp.beginPacket(addressLongSiteLeft,localPort);
+  //   Udp.write((const uint8_t*)msgIsFullFilament5ColorC, packetSize+1);
+  //   Udp.endPacket();  
+  // }
+
 }
 
 void sendToLongSiteRight(){
