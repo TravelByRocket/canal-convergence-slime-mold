@@ -17,7 +17,7 @@ unsigned int localPort = 8052;      // local port to listen on
 const int packetSize = 6; // f10000 for finger 1-9 and then four digitts for the cap touch result
 char sendHIGH[] = "f81000\0";       // a string to send back // 6 chars + terminator => 7
 char sendLOW[]  = "f80000\0";
-const char * addressShortSite = "192.168.0.102";
+const char * addressShortSite = "192.168.1.102";
 
 
 WiFiUDP Udp;

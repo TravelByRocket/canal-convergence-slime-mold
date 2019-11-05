@@ -15,9 +15,9 @@ unsigned int localPort = 8052;      // local port to listen on
 
 // buffers for receiving and sending data
 const int packetSize = 6; // f10000 for finger 1-9 and then four digitts for the cap touch result
-char sendHIGH[] = "f41000\0";       // a string to send back // 6 chars + terminator => 7
-char sendLOW[]  = "f40000\0";
-const char * addressLongSiteRight = "192.168.0.101";
+char sendHIGH[] = "f11000\0";       // a string to send back // 6 chars + terminator => 7
+char sendLOW[]  = "f10000\0";
+const char * addressLongSiteLeft = "192.168.1.100";
 
 
 WiFiUDP Udp;
@@ -26,7 +26,7 @@ void handleSendHIGH(){
   Serial.print("sending ");
   Serial.print(sendHIGH);
   Serial.println("");
-  Udp.beginPacket(addressLongSiteRight, localPort);
+  Udp.beginPacket(addressLongSiteLeft, localPort);
   Udp.write((const uint8_t*)sendHIGH, packetSize+1);
   Udp.endPacket();
 }
@@ -35,13 +35,13 @@ void handleSendLOW(){
   Serial.print("sending ");
   Serial.print(sendLOW);
   Serial.println("");
-  Udp.beginPacket(addressLongSiteRight, localPort);
+  Udp.beginPacket(addressLongSiteLeft, localPort);
   Udp.write((const uint8_t*)sendLOW, packetSize+1);
   Udp.endPacket();
 }
 
 void setupOTA(){
-  ArduinoOTA.setHostname("finger4");
+  ArduinoOTA.setHostname("finger1");
 
   ArduinoOTA.onStart([]() {
     String type;

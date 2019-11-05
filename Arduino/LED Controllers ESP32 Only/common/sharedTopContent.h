@@ -13,12 +13,13 @@
 // NOTE use even numbers here to easily avoid empty or doubly-define pixels
 int intersectF1onLED1 = 40;
 int intersectF2onLED2 = 80;
-int intersectF3onLED4 = 18;
-int intersectF4onLED5 = 56;
-int intersectF5onLED7 = 10;
+int intersectF3onLED4 = 20;
+int intersectF4onLED5 = 52;
+int intersectF5onLED7 = 92;
 
 int unusedPixelsLED3 = 28;
-int unusedPixelsLED4 = 30;
+int unusedPixelsLED4 = 32;
+int unusedPixelsLED5 = 20;
 int unusedPixelsLED6 = 16;
 
 int indexOffsetRightSiteStrips = 4; /// substract this off the right side LED indices to match diagram indices
@@ -36,8 +37,8 @@ int filamentLengths[] = {(intersectF1onLED1 + intersectF2onLED2)/2,
 						 (intersectF1onLED1 + intersectF2onLED2)/2,
 						 (150 - intersectF2onLED2 + intersectF3onLED4)/2,
 						 (150 - intersectF2onLED2 + intersectF3onLED4)/2,
-						 (150 - intersectF4onLED5)/2,
-						 (150 - intersectF4onLED5)/2,
+						 (150 - intersectF4onLED5 - unusedPixelsLED5)/2,
+						 (150 - intersectF4onLED5 - unusedPixelsLED5)/2,
 						 (intersectF4onLED5 + intersectF5onLED7)/2,
 						 (intersectF4onLED5 + intersectF5onLED7)/2
 						};
@@ -50,7 +51,11 @@ int filamentLengths[] = {(intersectF1onLED1 + intersectF2onLED2)/2,
 
 bool isTouchedFinger[] = {false,false,false,false,false};
 int activeToIndexFingerColorB[] = {0,0,0,0,0};
-int activeToIndexFingerColorC[] = {0,0,0,0,0};
+int activeToIndexFingerColorC[] = {fingerLengths[0],
+								   fingerLengths[1],
+								   fingerLengths[2],
+								   fingerLengths[3],
+								   fingerLengths[4]};
 // bool fingerIsGrowingColorB[] = {false,false,false,false,false}; // NOTE I think this is obsolete based on new vars used, like isTouched
 // bool fingerIsGrowingColorC[] = {false,false,false,false,false};
 bool isEmptyFingerColorB[] = {true,true,true,true,true}; // comparisons could replace this throughout code but this will make it more readable
@@ -109,7 +114,7 @@ int cBlu = 30;
 // GENERAL SETTINGS START //////////////
 ////////////////////////////////////////
 
-int breathPeriodSec = 60;
+int breathPeriodSec = 5;
 int breathPeriodMs = breathPeriodSec * 1000; // time in msec for full rotation through color
 int delayval = 25; // delay between loops in ms
 
@@ -125,7 +130,7 @@ char msgIsEmptyFinger3ColorB[]   = "f3b000\0"; // send to longSiteRight when Fin
 char msgIsFullFinger3ColorB[]    = "f3B000\0"; // send to longSiteRight when Finger 3 is full of ColorB 
 char msgIsEmptyFilament5ColorB[] = "g5b000\0"; // send to longSiteLeft when Filament 5 is empty of ColorB
 char msgIsFullFilament5ColorB[]  = "g5B000\0"; // send to longSiteLeft when Filament 5 is not empty of ColorB
-char msgIsEmptyFilament5ColorC[] = "g5c000\0"; // send to longSiteLeft when Filament 5 is empty of ColorC
+char msgIsEmptyFilament5ColorC[] = "g5c000\0"; // send to longSiteLeft when Filament 5 is not full of ColorC
 char msgIsFullFilament5ColorC[]  = "g5C000\0"; // send to longSiteLeft when Filament 5 is full of ColorC
 const char * addressLongSiteLeft  = "192.168.1.100";
 const char * addressLongSiteRight = "192.168.1.101";

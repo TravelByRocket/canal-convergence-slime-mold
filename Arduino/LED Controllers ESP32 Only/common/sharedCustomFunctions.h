@@ -128,7 +128,7 @@ void filament2stripRGB(int filament, int i, int r, int g, int b){
 			}
 			break;
 		case 1:
-			if(i < 149 - intersectF2onLED2){
+			if(i < intersectF2onLED2){
 				ledstrips[1][149 - intersectF2onLED2 - i].setRGB(r,g,b); // 
 			} else {
 				ledstrips[0][i - (149 - intersectF2onLED2)].setRGB(r,g,b); // 
@@ -145,12 +145,12 @@ void filament2stripRGB(int filament, int i, int r, int g, int b){
 			if(i < intersectF3onLED4){
 				ledstrips[3][intersectF3onLED4 - i].setRGB(r,g,b); // 
 			} else {
-				ledstrips[1][149 - intersectF3onLED4 - i].setRGB(r,g,b); // 
+				ledstrips[1][149 - (i - intersectF3onLED4)].setRGB(r,g,b); // 
 			}
 			break;
 		// the filaments controlled by longSiteRight
 		case 4:
-			ledstrips[4 - indexOffsetRightSiteStrips][149 - i].setRGB(r,g,b);
+			ledstrips[4 - indexOffsetRightSiteStrips][149 - unusedPixelsLED5 - i].setRGB(r,g,b);
 			break;
 		case 5:
 			ledstrips[4 - indexOffsetRightSiteStrips][intersectF4onLED5 + i].setRGB(r,g,b);
@@ -271,6 +271,46 @@ void processColorCommand(){
 void processSystemCommand(){
 	if(packetBuffer[0] == '0' && packetBuffer[1] == '0' && packetBuffer[2] == '0'){
 		ESP.restart();
+	}
+}
+
+void processSharedStateCommand(){
+
+
+	// char msgIsEmptyFinger3ColorB[]   = "f3b000\0"; // send to longSiteRight when Finger 3 is not full of ColorB 
+	// char msgIsFullFinger3ColorB[]    = "f3B000\0"; // send to longSiteRight when Finger 3 is full of ColorB 
+	if(packetBuffer[0] == 'f' && packetBuffer[1] == '3'){
+		if(packetBuffer[2] == 'b') {
+			isFullFingerColorB[2] = false;
+			Serial.println("setting isFullFingerColorB[2] = false");
+		} else if (packetBuffer[2] == 'B'){
+			isFullFingerColorB[2] = true;
+			Serial.println("setting isFullFingerColorB[2] = true");
+		}
+	}
+
+	// char msgIsEmptyFilament5ColorB[] = "g5b000\0"; // send to longSiteLeft when Filament 5 is empty of ColorB
+	// char msgIsFullFilament5ColorB[]  = "g5B000\0"; // send to longSiteLeft when Filament 5 is not empty of ColorB
+	if(packetBuffer[0] == 'g' && packetBuffer[1] == '5'){
+		if(packetBuffer[2] == 'b') {
+			isFullFilamentColorB[4] = false;
+			Serial.println("setting isFullFilamentColorB[4] = false");
+		} else if (packetBuffer[2] == 'B'){
+			isFullFilamentColorB[4] = true;
+			Serial.println("setting isFullFilamentColorB[4] = true");
+		}
+	}
+
+	// char msgIsEmptyFilament5ColorC[] = "g5c000\0"; // send to longSiteLeft when Filament 5 is empty of ColorC
+	// char msgIsFullFilament5ColorC[]  = "g5C000\0"; // send to longSiteLeft when Filament 5 is full of ColorC
+	if(packetBuffer[0] == 'g' && packetBuffer[1] == '5'){
+		if(packetBuffer[2] == 'c') {
+			isFullFilamentColorC[4] = false;
+			Serial.println("setting isFullFilamentColorC[4] = false");
+		} else if (packetBuffer[2] == 'C'){
+			isFullFilamentColorC[4] = true;
+			Serial.println("setting isFullFilamentColorC[4] = true");
+		}
 	}
 }
 
