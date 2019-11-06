@@ -166,15 +166,26 @@ void handleGrowingShrinking(){
 
     // flicker ColorC
     if (isFullFilamentColorB[k * 2] && isEmptyFilamentColorC[k * 2]){
-      if(random(100) == 0){ // at delayval = 25 ms this triggers 160 times in 4 seconds
-        activeToIndexFingerColorC[k * 2    ] -= 10;
+      if(random(12) == 0){ // at delayval = 25 ms this triggers 160 times in 4 seconds
+        activeToIndexFilamentColorC[k * 2    ] -= random(8, 14);;
+        // Serial.print("flickering ColorC for k * 2 = ");
+        // Serial.println(k * 2);
       }
     }
     if (isFullFilamentColorB[k * 2 + 1] && isEmptyFilamentColorC[k * 2 + 1]){
-      if(random(100) == 0){ // at delayval = 25 ms this triggers 160 times in 4 seconds
-        activeToIndexFingerColorC[k * 2 + 1] -= 10;
+      if(random(12) == 0){ // at delayval = 25 ms this triggers 160 times in 4 seconds
+        activeToIndexFilamentColorC[k * 2 + 1] -= random(8, 14);
+        // Serial.print("flickering ColorC for k * 2 + 1 = ");
+        // Serial.println(k * 2 + 1);
       }
     }
+
+    // Serial.print("Filaments are ColorC to indices \t");
+    // for(int i=0; i<4; i++){
+    //   Serial.print(activeToIndexFilamentColorC[i]);
+    //   Serial.print("\t");
+    // }
+    // Serial.println("");
 
     isEmptyFilamentColorC[k * 2]     = (activeToIndexFilamentColorC[k * 2] == filamentLengths[k * 2]);
     isEmptyFilamentColorC[k * 2 + 1] = (activeToIndexFilamentColorC[k * 2 + 1] == filamentLengths[k * 2 + 1]);
@@ -225,12 +236,12 @@ void handleGrowingShrinking(){
   isEmptyFingerColorC[2] = activeToIndexFingerColorC[2] == fingerLengths[2];
   isFullFingerColorC[2] = activeToIndexFingerColorC[2] == 0;  
 
-  Serial.print("Fingers are ColorC to indices \t");
-  for(int i=0; i<3; i++){
-    Serial.print(activeToIndexFingerColorC[i]);
-    Serial.print("\t");
-  }
-  Serial.println("");
+  // Serial.print("Fingers are ColorC to indices \t");
+  // for(int i=0; i<3; i++){
+  //   Serial.print(activeToIndexFingerColorC[i]);
+  //   Serial.print("\t");
+  // }
+  // Serial.println("");
 
 }
 
