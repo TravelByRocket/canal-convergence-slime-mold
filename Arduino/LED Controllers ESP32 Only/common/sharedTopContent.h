@@ -14,7 +14,7 @@
 // NOTE use even numbers here to easily avoid empty or doubly-define pixels
 int intersectF1onLED1 = 40;
 int intersectF2onLED2 = 80;
-int intersectF3onLED4 = 20;
+int intersectF3onLED4 = 36;
 int intersectF4onLED5 = 52;
 int intersectF5onLED7 = 92;
 
