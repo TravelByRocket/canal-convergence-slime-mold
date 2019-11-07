@@ -20,6 +20,10 @@ char sendLOW[]  = "f30000\0";
 const char * addressLongSiteLeft = "192.168.1.100";
 const char * addressLongSiteRight = "192.168.1.101";
 
+int waitBetweenMessagesMs = 300; 
+unsigned long lastSendTimeMs = 0;
+bool currState = LOW;
+bool prevState = LOW;
 
 WiFiUDP Udp;
 
@@ -118,15 +122,14 @@ void loop()
   
   int total1 =  cs_1_2.capacitiveSensor(30);
 
-  Serial.print("the captouch value is ");
-  Serial.print(total1);
-  Serial.print("\t");
-
-  if(total1 > 350){
-    handleSendHIGH();
-  } else {
-    handleSendLOW();
+  prevState = currState;
+  currState = (total1 > 350) ? HIGH : LOW;
+  if(prevState != currState || millis() - lastSendTimeMs > waitBetweenMessagesMs){
+    if(currState == HIGH){
+      handleSendHIGH();
+    } else if (currState == LOW){
+      handleSendLOW();
+    }
+    lastSendTimeMs = millis();
   }
-
-  delay(100 + random(20)); // arbitrary delay
 }

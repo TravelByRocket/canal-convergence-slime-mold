@@ -130,8 +130,10 @@ void filament2stripRGB(int filament, int i, int r, int g, int b){
 		case 1:
 			if(i < intersectF2onLED2){
 				ledstrips[1][intersectF2onLED2 - i].setRGB(r,g,b); // 
+				// ledstrips[1][149 - intersectF2onLED2 - i].setRGB(r,g,b); //
 			} else {
-				ledstrips[0][i - intersectF2onLED2].setRGB(r,g,b); // 
+				ledstrips[0][i - (149 - intersectF2onLED2)].setRGB(r,g,b); // 
+				// ledstrips[0][i - intersectF2onLED2].setRGB(r,g,b); // 
 			}
 			break;
 		case 2:

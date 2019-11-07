@@ -5,13 +5,13 @@ CRGB ledstrips[NUMSTRIPS][150];
 #include "sharedTopContent.h"
 #include "sharedCustomFunctions.h"
 
-int intersectF1onLED1_ss = 8;
+int intersectF1onLED1_ss = 52;
 int intersectF2onLED2_ss = 48;
-int intersectF3onLED5_ss = 40;
-int intersectLED4onLED3_ss = 100;
+int intersectF3onLED5_ss = 100;
+int intersectLED4onLED3_ss = 75;
 
 int unusedPixelsLED1_ss = 0;
-int unusedPixelsLED2_ss = 32;
+int unusedPixelsLED2_ss = 38;
 int unusedPixelsLED3_ss = 24;
 int unusedPixelsLED4_ss = 12;
 int unusedPixelsLED5_ss = 0;
@@ -20,14 +20,14 @@ int unusedPixelsLED5_ss = 0;
 int fingerLengths_ss[] = {
 	150 - intersectF1onLED1_ss - unusedPixelsLED1_ss,
 	150 - unusedPixelsLED3_ss,
-	150 - intersectF3onLED5_ss - unusedPixelsLED5_ss};
+	150 - intersectF3onLED5_ss};
 
 // how long is each filament section (use 1-index counting)
 int filamentLengths_ss[] = {
 	(intersectF1onLED1_ss + intersectF2onLED2_ss)/2,
 	(intersectF1onLED1_ss + intersectF2onLED2_ss)/2,
-	(150 - intersectF2onLED2_ss + intersectF3onLED5_ss)/2,
-	(150 - intersectF2onLED2_ss + intersectF3onLED5_ss)/2};
+	(150 - intersectF2onLED2_ss - unusedPixelsLED2_ss + intersectF3onLED5_ss)/2,
+	(150 - intersectF2onLED2_ss - unusedPixelsLED2_ss + intersectF3onLED5_ss)/2};
 
 bool isTouchedFinger_ss[] = {false,false,false,false};
 bool isTouchedFingerFixed_ss[] = {false,false,false};
@@ -388,7 +388,7 @@ void finger2stripRGB_ss(int finger, int i, int r, int g, int b){ //NOTE this nam
 	switch(finger){
 		// the fingers controlled by longSiteLeft
 		case 0: // Finger 1
-			ledstrips[0][149 - unusedPixelsLED1_ss - i].setRGB(r,g,b); // 
+			ledstrips[0][149 - i].setRGB(r,g,b); // 
 			break;
 		case 1: // Finger 2
       if(i < 149 - intersectLED4onLED3_ss){
@@ -399,7 +399,7 @@ void finger2stripRGB_ss(int finger, int i, int r, int g, int b){ //NOTE this nam
       }
 			break;
 		case 2: // Finger 3
-			ledstrips[3][149 - unusedPixelsLED5_ss - i].setRGB(r,g,b); // 
+			ledstrips[4][149 - i].setRGB(r,g,b); // 
 			break;
 		default:
 			Serial.print("something went wrong in finger2stripRGB");
@@ -412,7 +412,7 @@ void filament2stripRGB_ss(int filament, int i, int r, int g, int b){
 		// the filaments controlled by longSiteLeft
 		case 0:
       if(i < intersectF1onLED1_ss){
-        ledstrips[0][149 - unusedPixelsLED1_ss - intersectF1onLED1_ss - i].setRGB(r,g,b); // 
+        ledstrips[0][intersectF1onLED1_ss - i].setRGB(r,g,b); // 
       } else {
         ledstrips[1][i - intersectF1onLED1_ss].setRGB(r,g,b); // 
       }
@@ -424,7 +424,12 @@ void filament2stripRGB_ss(int filament, int i, int r, int g, int b){
 			ledstrips[1][i + intersectF2onLED2_ss].setRGB(r,g,b); //
 			break;
 		case 3:
-			ledstrips[4][i + intersectF3onLED5_ss].setRGB(r,g,b); //
+      if(i < intersectF3onLED5_ss){
+        ledstrips[4][intersectF3onLED5_ss - i].setRGB(r,g,b); //
+      } else {
+        ledstrips[1][149 - unusedPixelsLED2_ss - intersectF3onLED5_ss - i].setRGB(r,g,b); //
+      }
+			
 			break;
 		default:
 			Serial.print("something went wrong in filament2stripRGB");

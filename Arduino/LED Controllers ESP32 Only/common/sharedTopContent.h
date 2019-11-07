@@ -3,8 +3,8 @@
 #include <ESPmDNS.h> // used by OTA
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-// #include <wifitechwrangler2.h>
-#include <vacawifi.h>
+#include <wifitechwrangler2.h>
+// #include <vacawifi.h>
 
 ////////////////////////////////////////
 // GEOMETRY ////////////////////////////
@@ -133,6 +133,15 @@ char msgIsEmptyFilament5ColorB[] = "g5b000\0"; // send to longSiteLeft when Fila
 char msgIsFullFilament5ColorB[]  = "g5B000\0"; // send to longSiteLeft when Filament 5 is not empty of ColorB
 char msgIsEmptyFilament5ColorC[] = "g5c000\0"; // send to longSiteLeft when Filament 5 is not full of ColorC
 char msgIsFullFilament5ColorC[]  = "g5C000\0"; // send to longSiteLeft when Filament 5 is full of ColorC
+
+char msgLongSiteLeft0Touch[]   = "ll0000\0"; // send to medallion
+char msgLongSiteLeft1Touch[]   = "ll1000\0"; // send to medallion
+char msgLongSiteLeft2Touch[]   = "ll2000\0"; // send to medallion
+char msgLongSiteLeft3Touch[]   = "ll3000\0"; // send to medallion
+char msgLongSiteRight0Touch[]  = "lr0000\0"; // send to medallion
+char msgLongSiteRight1Touch[]  = "lr1000\0"; // send to medallion
+char msgLongSiteRight2Touch[]  = "lr2000\0"; // send to medallion
+
 const char * addressLongSiteLeft  = "192.168.1.100";
 const char * addressLongSiteRight = "192.168.1.101";
 const char * addressMedallion     = "192.168.1.103";
