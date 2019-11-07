@@ -102,9 +102,12 @@ void setup() {
 }
 
 void loop() {
-  ArduinoOTA.handle();
-  loopMedallion();
+  
   handleIncomingUDP();
+
+  handleColoring();
+
+  ArduinoOTA.handle();
   delay(delayval);
 }
 
@@ -143,52 +146,6 @@ void setupOTA(){
     }
   });
   ArduinoOTA.begin();
-}
-
-bool isGrowing = true;
-
-void loopMedallion() {
-
-  // designing interactions
-  
-
-  // if 0-2 fingers are touched -- breathe between two colors as we have already designed, using the toxic yellow and toxic green
-  // transition to more touches emanate the red/orange from the center
-  // transition to less touches emanate ColorA from center so red goes extinct
-  // if 3-4 fingers are touched -- trigger 100%, trim ~30%; red and orange alternate emanating from the center but stopping at ~1/4 to ~1/3 out from the center; make the distance they travel adjustable and make it the lesser for 3 touches and greater for 4 touches; trigger radius 50-100% but trimmed to 25-35%
-  // 
-  // 
-  // if 5-6 points are touched -- trigger 100%, trim ~30% on medallion and not trim on filament; same as the previous state but the emanation continues all the way out on the filament and the color rotation will be red turquise orange turqoise
-  // 
-  // 
-  // if 7 points are touched -- trigger 100%, no trim
-  // 
-  // 
-  // if 8 points are touched -- trigger 75%, no trim
-  // 
-  // 
-  // if 9 points are touched -- emanate a ColorC that breathes between turqoise and cyan but with the action of the normal state
-
-  if(isGrowing){
-    activationIndex++;
-  } else {
-    activationIndex--;
-  }
-
-  if(activationIndex == 75 || activationIndex == 0){
-    isGrowing = !isGrowing;
-  }
-  
-  for(int k=0; k < 75; k++){ // set each pixel color
-    if(k < activationIndex){
-      setPixelColorMedallion(k,insideR,insideG,insideB);
-    } else {
-      setPixelColorMedallion(k,outsideR,outsideG,outsideB);
-    }
-  }
-
-  FastLED.show();
-
 }
 
 void medallion2stripRGB(int i, int r, int g, int b){
@@ -298,6 +255,51 @@ void breatheYellowGreen(){
   aRed = (a1Red * breathProgressPercent) + (a2Red * (1 - breathProgressPercent));
   aGre = (a1Gre * breathProgressPercent) + (a2Gre * (1 - breathProgressPercent));
   aBlu = (a1Blu * breathProgressPercent) + (a2Blu * (1 - breathProgressPercent));
+}
+
+void handleColoring(){
+  
+  breatheYellowGreen()
+
+  // designing interactions
+  // stepsSinceLastChange
+  // trimRadiusPx
+  // int triggerRadiusPx
+
+  
+  switch (fingersActiveAll) {
+      case : 0
+        // do something
+        break;
+      case :
+        // do something
+        break;
+      default:
+        // do something
+  }
+
+
+  // if 0-2 fingers are touched -- breathe between two colors as we have already designed, using the toxic yellow and toxic green
+  // transition to more touches emanate the red/orange from the center
+  // transition to less touches emanate ColorA from center so red goes extinct
+  // if 3-4 fingers are touched -- trigger 100%, trim ~30%; red and orange alternate emanating from the center but stopping at ~1/4 to ~1/3 out from the center; make the distance they travel adjustable and make it the lesser for 3 touches and greater for 4 touches; trigger radius 50-100% but trimmed to 25-35%
+  // 
+  // 
+  // if 5-6 points are touched -- trigger 100%, trim ~30% on medallion and not trim on filament; same as the previous state but the emanation continues all the way out on the filament and the color rotation will be red turquise orange turqoise
+  // 
+  // 
+  // if 7 points are touched -- trigger 100%, no trim
+  // 
+  // 
+  // if 8 points are touched -- trigger 75%, no trim
+  // 
+  // 
+  // if 9 points are touched -- emanate a ColorC that breathes between turqoise and cyan but with the action of the normal state
+  
+  // fingersActiveAll
+
+
+  FastLED.show();
 }
 
 // CONSIDER THIS FROM OTABASIC TO RECONNET ON CONNECTION LOSS
