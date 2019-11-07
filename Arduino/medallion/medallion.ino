@@ -36,6 +36,9 @@ int outsideB = 30;
 const int NUMSTRIPS = 4;
 const int LEDPINS[] = {4,0,2,15};
 
+const int medallionRadiusPx = 37;
+const int filamentRadiusPx = 150; // this is more like a half of a length but everythung on this site is radial so keeping with that nomenclature
+
 // the number of pixels used on each strip
 int NUMPIXSTRIP[] = {75,
                      75,
@@ -188,9 +191,28 @@ void loopMedallion() {
 
 }
 
-void setPixelColorMedallion(int i, int r, int g, int b){
+void medallion2stripRGB(int i, int r, int g, int b){
+  ledstrips[0][37 + i].setRGB(r,g,b);
+  ledstrips[0][37 - i].setRGB(r,g,b);
+  
+  ledstrips[1][37 + i].setRGB(r,g,b);
+  ledstrips[1][37 - i].setRGB(r,g,b);
+  
+  ledstrips[2][37 + i].setRGB(r,g,b);
+  ledstrips[2][37 - i].setRGB(r,g,b);
+  
+  ledstrips[3][75 + i].setRGB(r,g,b);
+  ledstrips[3][75 - i].setRGB(r,g,b);
+}
 
-  if(i < 37){
+void filament2stripRGB(int i, int r, int g, int b){
+  ledstrips[3][75 + i].setRGB(r,g,b);
+  ledstrips[3][75 - i].setRGB(r,g,b);
+}
+
+
+void all2stripRGB(int i, int r, int g, int b){
+    if(i < 37){
     ledstrips[0][37 + i].setRGB(r,g,b);
     ledstrips[0][37 - i].setRGB(r,g,b);
     
@@ -206,7 +228,6 @@ void setPixelColorMedallion(int i, int r, int g, int b){
     ledstrips[3][75 + i].setRGB(r,g,b);
     ledstrips[3][75 - i].setRGB(r,g,b);
   }
-  
 }
 
 void handleIncomingUDP(){
@@ -263,6 +284,20 @@ void handleIncomingUDP(){
     }
     
   }
+}
+
+void breatheYellowGreen(){
+
+  float breathProgressPercent; // decimal representation
+  if(millis() % breathPeriodMs < breathPeriodMs/2){
+    breathProgressPercent =                       (millis() % (breathPeriodMs/2))  / (float)(breathPeriodMs / 2);
+  } else {
+    breathProgressPercent = ((breathPeriodMs/2) - (millis() % (breathPeriodMs/2))) / (float)(breathPeriodMs / 2);
+  }
+
+  aRed = (a1Red * breathProgressPercent) + (a2Red * (1 - breathProgressPercent));
+  aGre = (a1Gre * breathProgressPercent) + (a2Gre * (1 - breathProgressPercent));
+  aBlu = (a1Blu * breathProgressPercent) + (a2Blu * (1 - breathProgressPercent));
 }
 
 // CONSIDER THIS FROM OTABASIC TO RECONNET ON CONNECTION LOSS

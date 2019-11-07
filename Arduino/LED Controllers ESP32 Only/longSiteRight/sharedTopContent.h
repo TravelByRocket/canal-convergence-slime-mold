@@ -3,8 +3,8 @@
 #include <ESPmDNS.h> // used by OTA
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-// #include <wifitechwrangler2.h>
-#include <vacawifi.h>
+#include <wifitechwrangler2.h>
+// #include <vacawifi.h>
 
 ////////////////////////////////////////
 // GEOMETRY ////////////////////////////
