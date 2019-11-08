@@ -5,6 +5,16 @@
 #include <ArduinoOTA.h>
 #include <CapacitiveSensor.h>
 #include <wifitechwrangler2.h>
+// #include <wifihotspot_rocketphonexs.h>
+
+bool isMovingOutward = true;
+CRGB colorFeedMedallion;
+CRGB colorFeedFilament;
+bool canTransition = false;
+int stepsSinceLastChange = 0;
+int programToRun = 0;
+int colorChoice = 0;
+int sourceIndex = 0;
 
 //////////////////////////////////
 // TABLE OF COLORS TO TRY ////////
@@ -37,7 +47,7 @@ const int NUMSTRIPS = 4;
 const int LEDPINS[] = {4,0,2,15};
 
 const int medallionRadiusPx = 37;
-const int filamentRadiusPx = 150; // this is more like a half of a length but everythung on this site is radial so keeping with that nomenclature
+const int filamentRadiusPx = 75; // this is more like a half of a length but everythung on this site is radial so keeping with that nomenclature
 
 // the number of pixels used on each strip
 int NUMPIXSTRIP[] = {75,
@@ -103,6 +113,13 @@ void setup() {
 
 void loop() {
   
+  Serial.print("------------");
+  Serial.println("");
+
+  Serial.print("number of fingers touched is\t");
+  Serial.print(fingersActiveAll);
+  Serial.println("");
+
   handleIncomingUDP();
 
   handleColoring();
@@ -149,24 +166,76 @@ void setupOTA(){
 }
 
 void medallion2stripRGB(int i, int r, int g, int b){
-  ledstrips[0][37 + i].setRGB(r,g,b);
-  ledstrips[0][37 - i].setRGB(r,g,b);
+  ledstrips[0][medallionRadiusPx + i].setRGB(r,g,b);
+  ledstrips[0][medallionRadiusPx - i].setRGB(r,g,b);
   
-  ledstrips[1][37 + i].setRGB(r,g,b);
-  ledstrips[1][37 - i].setRGB(r,g,b);
+  ledstrips[1][medallionRadiusPx + i].setRGB(r,g,b);
+  ledstrips[1][medallionRadiusPx - i].setRGB(r,g,b);
   
-  ledstrips[2][37 + i].setRGB(r,g,b);
-  ledstrips[2][37 - i].setRGB(r,g,b);
+  ledstrips[2][medallionRadiusPx + i].setRGB(r,g,b);
+  ledstrips[2][medallionRadiusPx - i].setRGB(r,g,b);
   
-  ledstrips[3][75 + i].setRGB(r,g,b);
-  ledstrips[3][75 - i].setRGB(r,g,b);
+  ledstrips[3][filamentRadiusPx + i].setRGB(r,g,b);
+  ledstrips[3][filamentRadiusPx - i].setRGB(r,g,b);
 }
 
 void filament2stripRGB(int i, int r, int g, int b){
-  ledstrips[3][75 + i].setRGB(r,g,b);
-  ledstrips[3][75 - i].setRGB(r,g,b);
+  ledstrips[3][filamentRadiusPx + i].setRGB(r,g,b);
+  ledstrips[3][filamentRadiusPx - i].setRGB(r,g,b);
 }
 
+void medallionShiftOutward(){
+  for(int destinationIndex=medallionRadiusPx; destinationIndex>0; destinationIndex--){ // start at outside of range and move inward as colors are shifted outward
+    sourceIndex = destinationIndex - 1;
+    ledstrips[0][medallionRadiusPx + destinationIndex] = ledstrips[0][medallionRadiusPx + sourceIndex]; // each pixel get assigned to the color just inside of it
+    ledstrips[0][medallionRadiusPx - destinationIndex] = ledstrips[0][medallionRadiusPx - sourceIndex]; // on both side
+    ledstrips[1][medallionRadiusPx + destinationIndex] = ledstrips[1][medallionRadiusPx + sourceIndex]; // each pixel get assigned to the color just inside of it
+    ledstrips[1][medallionRadiusPx - destinationIndex] = ledstrips[1][medallionRadiusPx - sourceIndex]; // on both side
+    ledstrips[2][medallionRadiusPx + destinationIndex] = ledstrips[2][medallionRadiusPx + sourceIndex]; // each pixel get assigned to the color just inside of it
+    ledstrips[2][medallionRadiusPx - destinationIndex] = ledstrips[2][medallionRadiusPx - sourceIndex]; // on both side
+  }
+  ledstrips[0][medallionRadiusPx] = colorFeedMedallion;
+  ledstrips[1][medallionRadiusPx] = colorFeedMedallion;
+  ledstrips[2][medallionRadiusPx] = colorFeedMedallion;
+}
+
+void medallionShiftInward(){
+  for(int destinationIndex=0; destinationIndex<medallionRadiusPx; destinationIndex++){ // start at outside of range and move inward as colors are shifted outward
+    sourceIndex = destinationIndex + 1;
+    ledstrips[0][medallionRadiusPx + destinationIndex] = ledstrips[0][medallionRadiusPx + sourceIndex]; // each pixel get assigned to the color just inside of it
+    ledstrips[0][medallionRadiusPx - destinationIndex] = ledstrips[0][medallionRadiusPx - sourceIndex]; // on both side
+    ledstrips[1][medallionRadiusPx + destinationIndex] = ledstrips[1][medallionRadiusPx + sourceIndex]; // each pixel get assigned to the color just inside of it
+    ledstrips[1][medallionRadiusPx - destinationIndex] = ledstrips[1][medallionRadiusPx - sourceIndex]; // on both side
+    ledstrips[2][medallionRadiusPx + destinationIndex] = ledstrips[2][medallionRadiusPx + sourceIndex]; // each pixel get assigned to the color just inside of it
+    ledstrips[2][medallionRadiusPx - destinationIndex] = ledstrips[2][medallionRadiusPx - sourceIndex]; // on both side
+  }
+  ledstrips[0][ 0] = colorFeedMedallion;
+  ledstrips[0][74] = colorFeedMedallion;
+  ledstrips[1][ 0] = colorFeedMedallion;
+  ledstrips[1][74] = colorFeedMedallion;
+  ledstrips[2][ 0] = colorFeedMedallion;
+  ledstrips[2][74] = colorFeedMedallion;
+}
+
+void filamentShiftOutward(){
+  for(int destinationIndex=filamentRadiusPx; destinationIndex>0; destinationIndex--){ // start at outside of range and move inward as colors are shifted outward
+    sourceIndex = destinationIndex - 1;
+    ledstrips[3][filamentRadiusPx + destinationIndex - 1] = ledstrips[3][filamentRadiusPx + sourceIndex - 1]; // each pixel get assigned to the color just inside of it
+    ledstrips[3][filamentRadiusPx - destinationIndex    ] = ledstrips[3][filamentRadiusPx - sourceIndex    ]; // on both side
+  }
+  ledstrips[3][filamentRadiusPx - 1] = colorFeedFilament; // set the interior pixels to the fed color
+  ledstrips[3][filamentRadiusPx    ] = colorFeedFilament;
+}
+
+void filamentShiftInward(){
+  for(int destinationIndex=0; destinationIndex<filamentRadiusPx; destinationIndex++){ 
+    sourceIndex = destinationIndex + 1;
+    ledstrips[3][filamentRadiusPx + destinationIndex - 1] = ledstrips[3][filamentRadiusPx + sourceIndex - 1]; 
+    ledstrips[3][filamentRadiusPx - destinationIndex    ] = ledstrips[3][filamentRadiusPx - sourceIndex    ]; 
+  }
+  ledstrips[3][  0] = colorFeedFilament; 
+  ledstrips[3][149] = colorFeedFilament;
+}
 
 void all2stripRGB(int i, int r, int g, int b){
     if(i < 37){
@@ -243,63 +312,239 @@ void handleIncomingUDP(){
   }
 }
 
-void breatheYellowGreen(){
-
-  float breathProgressPercent; // decimal representation
-  if(millis() % breathPeriodMs < breathPeriodMs/2){
-    breathProgressPercent =                       (millis() % (breathPeriodMs/2))  / (float)(breathPeriodMs / 2);
-  } else {
-    breathProgressPercent = ((breathPeriodMs/2) - (millis() % (breathPeriodMs/2))) / (float)(breathPeriodMs / 2);
-  }
-
-  aRed = (a1Red * breathProgressPercent) + (a2Red * (1 - breathProgressPercent));
-  aGre = (a1Gre * breathProgressPercent) + (a2Gre * (1 - breathProgressPercent));
-  aBlu = (a1Blu * breathProgressPercent) + (a2Blu * (1 - breathProgressPercent));
-}
-
 void handleColoring(){
-  
-  breatheYellowGreen()
+  stepsSinceLastChange++;
 
-  // designing interactions
-  // stepsSinceLastChange
-  // trimRadiusPx
-  // int triggerRadiusPx
+  Serial.print("running program\t\t");
+  Serial.print(programToRun);
+  Serial.println("");
 
-  
-  switch (fingersActiveAll) {
-      case : 0
-        // do something
-        break;
-      case :
-        // do something
-        break;
-      default:
-        // do something
+  Serial.print("steps since last change is\t");
+  Serial.print(stepsSinceLastChange);
+  Serial.println("");
+
+  Serial.print("can transition is\t\t");
+  Serial.print(canTransition ? "true" : "false");
+  Serial.println("");
+
+  switch (programToRun) {
+    case 0:
+      baselineColorBouncing();
+      break;
+    case 1:
+      baselineColorBouncing();
+      break;
+    case 2:
+      // alternate orange and red emanating out from the center
+      if(colorChoice == 0){
+        colorFeedMedallion.setRGB(85,15,0);
+        colorFeedFilament.setRGB(85,15,0);
+      } else if(colorChoice == 1){
+        colorFeedMedallion.setRGB(100,0,0);
+        colorFeedFilament.setRGB(100,0,0);
+      } else {
+        colorChoice = 0;
+        colorFeedMedallion.setRGB(85,15,0);
+        colorFeedFilament.setRGB(85,15,0);
+      }
+
+      // shift always outward
+      medallionShiftOutward();
+      filamentShiftOutward();
+
+      // trigger at 100% medallion radius 
+      if(stepsSinceLastChange == medallionRadiusPx){
+        stepsSinceLastChange = 0;
+        colorChoice = (colorChoice + 1) % 2;
+        canTransition = true;
+      } else {
+        canTransition = false;
+      }
+      break;
+    case 3:
+      // red turquise orange turqoise
+      if(colorChoice == 0){
+        colorFeedMedallion.setRGB(85,15,0); // orange
+        colorFeedFilament.setRGB(85,15,0);
+      } else if(colorChoice == 1){
+        colorFeedMedallion.setRGB(33,67,0); // greenish
+        colorFeedFilament.setRGB(33,67,0);
+      } else if(colorChoice == 2){
+        colorFeedMedallion.setRGB(100,0,0); // red 
+        colorFeedFilament.setRGB(100,0,0);
+      } else if(colorChoice == 3){
+        colorFeedMedallion.setRGB(0,70,30); // turqoise
+        colorFeedFilament.setRGB(0,70,30);
+      } else {
+        colorChoice = 0;
+        colorFeedMedallion.setRGB(85,15,0);
+        colorFeedFilament.setRGB(85,15,0);
+      }
+
+      // shift always outward
+      medallionShiftOutward();
+      filamentShiftOutward();
+
+      // trigger at 100% medallion radius 
+      if(stepsSinceLastChange == medallionRadiusPx){
+        stepsSinceLastChange = 0;
+        colorChoice = (colorChoice + 1) % 4;
+        canTransition = true;
+      } else {
+        canTransition = false;
+      }
+
+      break;
+    case 4:
+      // red turqoise orange lime red cyan orange yellow turqoise lime cyan
+      if(colorChoice == 0){
+        colorFeedMedallion.setRGB(100,0,0); // red
+        colorFeedFilament.setRGB(100,0,0);
+      } else if(colorChoice == 1){
+        colorFeedMedallion.setRGB(0,30,70); // turquoise
+        colorFeedFilament.setRGB(0,30,70);
+      } else if(colorChoice == 2){
+        colorFeedMedallion.setRGB(85,15,0); // orange 
+        colorFeedFilament.setRGB(85,15,0);
+      } else if(colorChoice == 3){
+        colorFeedMedallion.setRGB(33,67,0); // greenish
+        colorFeedFilament.setRGB(33,67,0);
+      } else if(colorChoice == 4){
+        colorFeedMedallion.setRGB(100,0,0); // red
+        colorFeedFilament.setRGB(100,0,0);
+      } else if(colorChoice == 5){
+        colorFeedMedallion.setRGB(0,50,50); // cyan
+        colorFeedFilament.setRGB(0,50,50);
+      } else if(colorChoice == 6){
+        colorFeedMedallion.setRGB(85,15,0); // orange
+        colorFeedFilament.setRGB(85,15,0);
+      } else if(colorChoice == 7){
+        colorFeedMedallion.setRGB(45,55,0); // yellowish
+        colorFeedFilament.setRGB(45,55,0);
+      } else if(colorChoice == 8){
+        colorFeedMedallion.setRGB(0,70,30); // turquoise
+        colorFeedFilament.setRGB(0,70,30);
+      } else if(colorChoice == 9){
+        colorFeedMedallion.setRGB(33,67,0); // greenish
+        colorFeedFilament.setRGB(33,67,0);
+      } else if(colorChoice == 10){
+        colorFeedMedallion.setRGB(0,50,50); // cyan
+        colorFeedFilament.setRGB(0,50,50);
+      }
+
+      // shift always outward
+      medallionShiftOutward();
+      filamentShiftOutward();
+
+      // trigger at 75% medallion radius 
+      if(stepsSinceLastChange == medallionRadiusPx / 2){
+        stepsSinceLastChange = 0;
+        colorChoice = (colorChoice + 1) % 10;
+        canTransition = true;
+      } else {
+        canTransition = false;
+      }
+
+      break;
+    case 5:
+      // set cyan if moving outward and turqoise if moving inward
+      if(isMovingOutward){
+        colorFeedMedallion.setRGB(0,50,50); // cyan
+        colorFeedFilament.setRGB(0,50,50);
+      } else {
+        colorFeedMedallion.setRGB(0,70,30); // turqoise
+        colorFeedFilament.setRGB(0,70,30);
+      }
+
+      // shift in or out depending on states
+      if(        isMovingOutward && stepsSinceLastChange < medallionRadiusPx){
+        medallionShiftOutward();
+        filamentShiftOutward();
+      } else if ( isMovingOutward && stepsSinceLastChange >= medallionRadiusPx){
+        filamentShiftOutward();
+      } else if (!isMovingOutward && stepsSinceLastChange < medallionRadiusPx){
+        medallionShiftInward();
+        filamentShiftInward();
+      } else if (!isMovingOutward && stepsSinceLastChange >= medallionRadiusPx){
+        filamentShiftInward();
+      }
+
+      // bounce each time it is has traveled the length of a filament radius, in either direction
+      if(stepsSinceLastChange == filamentRadiusPx){
+        isMovingOutward = !isMovingOutward;
+        stepsSinceLastChange = 0;
+        canTransition = true;
+      } else {
+        canTransition = false;
+      }
+
+      break;
+    default:
+      // do something
+      break;
   }
 
 
-  // if 0-2 fingers are touched -- breathe between two colors as we have already designed, using the toxic yellow and toxic green
+  // }
+
+  // CASE 0 if 0-2 fingers are touched -- breathe between two colors as we have already designed, using the toxic yellow and toxic green
   // transition to more touches emanate the red/orange from the center
   // transition to less touches emanate ColorA from center so red goes extinct
   // if 3-4 fingers are touched -- trigger 100%, trim ~30%; red and orange alternate emanating from the center but stopping at ~1/4 to ~1/3 out from the center; make the distance they travel adjustable and make it the lesser for 3 touches and greater for 4 touches; trigger radius 50-100% but trimmed to 25-35%
   // 
   // 
-  // if 5-6 points are touched -- trigger 100%, trim ~30% on medallion and not trim on filament; same as the previous state but the emanation continues all the way out on the filament and the color rotation will be red turquise orange turqoise
+  // CASE 1 if 5-6 points are touched -- trigger 100%, trim ~30% on medallion and not trim on filament; same as the previous state but the emanation continues all the way out on the filament and the color rotation will be red turquise orange turqoise
   // 
   // 
-  // if 7 points are touched -- trigger 100%, no trim
+  // CASE 2 if 7 points are touched -- trigger 100%, no trim
   // 
   // 
-  // if 8 points are touched -- trigger 75%, no trim
+  // CASE 3 if 8 points are touched -- trigger 75%, no trim
   // 
   // 
-  // if 9 points are touched -- emanate a ColorC that breathes between turqoise and cyan but with the action of the normal state
+  // CASE 4 if 9 points are touched -- emanate a ColorC that breathes between turqoise and cyan but with the action of the normal state
   
   // fingersActiveAll
 
+  if(canTransition){ // switch the active program only if the program has indicated it is at a switching point
+    programToRun = fingersActiveAll;
+  }
 
   FastLED.show();
+}
+
+void baselineColorBouncing(){
+  // set greenish if moving outward and yellow if moving inward
+  if(isMovingOutward){
+    colorFeedMedallion.setRGB(33,67,0); // greenish
+    colorFeedFilament.setRGB(33,67,0);
+  } else {
+    colorFeedMedallion.setRGB(45,55,0); // yellowish
+    colorFeedFilament.setRGB(45,55,0);
+  }
+
+  // shift in or out depending on states
+  if(        isMovingOutward && stepsSinceLastChange < medallionRadiusPx){
+    medallionShiftOutward();
+    filamentShiftOutward();
+  } else if ( isMovingOutward && stepsSinceLastChange >= medallionRadiusPx){
+    filamentShiftOutward();
+  } else if (!isMovingOutward && stepsSinceLastChange < medallionRadiusPx){
+    medallionShiftInward();
+    filamentShiftInward();
+  } else if (!isMovingOutward && stepsSinceLastChange >= medallionRadiusPx){
+    filamentShiftInward();
+  }
+
+  // bounce each time it is has traveled the length of a filament radius, in either direction
+  if(stepsSinceLastChange == filamentRadiusPx){
+    isMovingOutward = !isMovingOutward;
+    stepsSinceLastChange = 0;
+    canTransition = true;
+  } else {
+    canTransition = false;
+  }
+
 }
 
 // CONSIDER THIS FROM OTABASIC TO RECONNET ON CONNECTION LOSS
