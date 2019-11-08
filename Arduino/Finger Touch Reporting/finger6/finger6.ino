@@ -7,7 +7,7 @@
 //#include <ESP8266WiFiMulti.h>
 //ESP8266WiFiMulti wifiMulti; // keep above bryanwifinetworks.h
 //#include <bryanwifinetworks.h>
-#include <wifitechwrangler2.h>
+#include <wifitechwrangler3.h>
 
 CapacitiveSensor   cs_1_2 = CapacitiveSensor(5,4);        // D1 (GPIO5) charger to D2 (GPIO4) sensor
 
@@ -19,6 +19,10 @@ char sendHIGH[] = "f61000\0";       // a string to send back // 6 chars + termin
 char sendLOW[]  = "f60000\0";
 const char * addressShortSite = "192.168.1.102";
 
+int waitBetweenMessagesMs = 300; 
+unsigned long lastSendTimeMs = 0;
+bool currState = LOW;
+bool prevState = LOW;
 
 WiFiUDP Udp;
 
@@ -83,7 +87,7 @@ void setup()
   Serial.println(""); //get out of the way of anything above
   
   WiFi.mode(WIFI_STA);
-  WiFi.begin(SSID,PASS);
+  WiFi.begin(SSID_ss,PASS_ss);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -91,9 +95,10 @@ void setup()
 
   Serial.println("");
   Serial.println("WiFi connected");
+  Serial.print("Network name: ");
+  Serial.println(WiFi.SSID());
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
-  Serial.println();
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
   
@@ -113,12 +118,17 @@ void loop()
   Serial.print("the captouch value is ");
   Serial.print(total1);
   Serial.print("\t");
+  Serial.println("");
 
-  if(total1 > 350){
-    handleSendHIGH();
-  } else {
-    handleSendLOW();
+  prevState = currState;
+  currState = (total1 > 350) ? HIGH : LOW;
+  if(prevState != currState || millis() - lastSendTimeMs > waitBetweenMessagesMs){
+    if(currState == HIGH){
+      handleSendHIGH();
+    } else if (currState == LOW){
+      handleSendLOW();
+    }
+    lastSendTimeMs = millis();
   }
-
-  delay(100 + random(20)); // arbitrary delay
+  delay(25);
 }

@@ -19,6 +19,7 @@ char sendHIGH[] = "f11000\0";       // a string to send back // 6 chars + termin
 char sendLOW[]  = "f10000\0";
 const char * addressLongSiteLeft = "192.168.1.100";
 
+
 int waitBetweenMessagesMs = 300; 
 unsigned long lastSendTimeMs = 0;
 bool currState = LOW;
@@ -95,8 +96,12 @@ void setup()
 
   Serial.println("");
   Serial.println("WiFi connected");
+  Serial.print("Network name: ");
+  Serial.println(WiFi.SSID());
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+  Serial.print("MAC: ");
+  Serial.println(WiFi.macAddress());
   
 //  setupWiFiMulti();
 
@@ -114,6 +119,7 @@ void loop()
   Serial.print("the captouch value is ");
   Serial.print(total1);
   Serial.print("\t");
+  Serial.println("");
 
   prevState = currState;
   currState = (total1 > 350) ? HIGH : LOW;

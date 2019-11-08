@@ -106,8 +106,12 @@ void setup()
 
   Serial.println("");
   Serial.println("WiFi connected");
+  Serial.print("Network name: ");
+  Serial.println(WiFi.SSID());
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+  Serial.print("MAC: ");
+  Serial.println(WiFi.macAddress());
   
 //  setupWiFiMulti();
 
@@ -121,6 +125,11 @@ void loop()
   ArduinoOTA.handle();
   
   int total1 =  cs_1_2.capacitiveSensor(30);
+
+  Serial.print("the captouch value is ");
+  Serial.print(total1);
+  Serial.print("\t");
+  Serial.println("");
 
   prevState = currState;
   currState = (total1 > 350) ? HIGH : LOW;
