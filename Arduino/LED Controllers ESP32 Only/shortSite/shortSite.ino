@@ -5,6 +5,8 @@ CRGB ledstrips[NUMSTRIPS][150];
 #include "sharedTopContent.h"
 #include "sharedCustomFunctions.h"
 
+#include <wifitechwrangler3.h>
+
 int intersectF1onLED1_ss = 52;
 int intersectF2onLED2_ss = 48;
 int intersectF3onLED5_ss = 100;
@@ -55,7 +57,7 @@ bool isFullFilamentColorC_ss[] = {false,false,false,false};
 void setup()
 {
 	startSerial();
-	startWiFi();
+	startWiFi_ss();
 	setNameOTA();
 	startOTA(); // run function to enable over-the-air updating
 	startFastLED();
@@ -354,7 +356,7 @@ void handleColoringShortSite(){
     for(int pixel=0; pixel<fingerLengths_ss[finger]; pixel++){ // pixel index
       if (pixel >= activeToIndexFingerColorC_ss[finger]){ // if the current pixel index is greater than the ColorC index then make it ColorC
         finger2stripRGB_ss(finger,pixel,cRed,cGre,cBlu); // make ColorC as described above
-      } else if (pixel <= activeToIndexFingerColorB_ss[finger]){ // if the current pixel index is less than the ColorB index then make it ColorB
+      } else if (pixel < activeToIndexFingerColorB_ss[finger]){ // if the current pixel index is less than the ColorB index then make it ColorB
         finger2stripRGB_ss(finger,pixel,bRed,bGre,bBlu); // make ColorB as described above
       // } else if (pixel > activeToIndexFingerColorB[finger] && pixel < activeToIndexFingerColorC[finger]){ // if the current pixel index is greater than the ColorB index and less than the ColorC index then make the pixel ColorA
       } else {
@@ -369,7 +371,7 @@ void handleColoringShortSite(){
       // the if statement below could have been written more efficiently but it is instead writte to make more sense to a reader, going in order through colors A, B, and C
       if (pixel >= activeToIndexFilamentColorC_ss[filament]){ // if the current pixel index is greater than the ColorC index then make it ColorC
         filament2stripRGB_ss(filament,pixel,cRed,cGre,cBlu); // make ColorC as described above
-      } else if (pixel <= activeToIndexFilamentColorB_ss[filament]){ // if the current pixel index is less than the ColorB index then make it ColorB
+      } else if (pixel < activeToIndexFilamentColorB_ss[filament]){ // if the current pixel index is less than the ColorB index then make it ColorB
         filament2stripRGB_ss(filament,pixel,bRed,bGre,bBlu); // make ColorB as described above
       } else {
         filament2stripRGB_ss(filament,pixel,aRed,aGre,aBlu); // make ColorA as described above
@@ -443,4 +445,22 @@ void startFastLED(){
 	FastLED.addLeds<NEOPIXEL,  4>(ledstrips[2],150);
 	FastLED.addLeds<NEOPIXEL, 15>(ledstrips[3],150);
 	FastLED.addLeds<NEOPIXEL, 27>(ledstrips[4],150);
+}
+
+void startWiFi_ss(){
+  Serial.print("MAC: ");
+  Serial.println(WiFi.macAddress());
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(SSID_ss.c_str(),PASS_ss.c_str());
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.print("Network name: ");
+  Serial.println(WiFi.SSID());
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
 }
