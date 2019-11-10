@@ -145,5 +145,6 @@ char msgLongSiteRight2Touch[]  = "lr2000\0"; // send to medallion
 const char * addressLongSiteLeft  = "192.168.1.100";
 const char * addressLongSiteRight = "192.168.1.101";
 const char * addressMedallion     = "192.168.1.103";
+const char * addressMacAir        = "192.168.1.56";
 
 WiFiUDP Udp;

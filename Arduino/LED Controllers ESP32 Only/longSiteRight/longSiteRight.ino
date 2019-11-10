@@ -268,6 +268,9 @@ void handleIncomingUDP(){
   }
 }
 
+unsigned long lastSendTimeTouches = 0;
+int prevTouches = 0;
+int currTouches = 0;
 void sendOutStatuses(){
 
   // NOTE this should only send when there are changes or for heartbeat updates but writing it here for now
@@ -313,18 +316,24 @@ void sendOutStatuses(){
     }
   }
 
-  if(touchCount == 0){
-    Udp.beginPacket(addressMedallion,localPort);
-    Udp.write((const uint8_t*)msgLongSiteRight0Touch, packetSize+1);
-    Udp.endPacket();
-  } else if(touchCount == 1){
-    Udp.beginPacket(addressMedallion,localPort);
-    Udp.write((const uint8_t*)msgLongSiteRight1Touch, packetSize+1);
-    Udp.endPacket();
-  } else if(touchCount == 2){
-    Udp.beginPacket(addressMedallion,localPort);
-    Udp.write((const uint8_t*)msgLongSiteRight2Touch, packetSize+1);
-    Udp.endPacket();
+  prevTouches = currTouches;
+  currTouches = touchCount;
+
+  if(millis() - lastSendTimeTouches > 300 || prevTouches != currTouches){
+    if(touchCount == 0){
+      Udp.beginPacket(addressMedallion,localPort);
+      Udp.write((const uint8_t*)msgLongSiteRight0Touch, packetSize+1);
+      Udp.endPacket();
+    } else if(touchCount == 1){
+      Udp.beginPacket(addressMedallion,localPort);
+      Udp.write((const uint8_t*)msgLongSiteRight1Touch, packetSize+1);
+      Udp.endPacket();
+    } else if(touchCount == 2){
+      Udp.beginPacket(addressMedallion,localPort);
+      Udp.write((const uint8_t*)msgLongSiteRight2Touch, packetSize+1);
+      Udp.endPacket();
+    }
+    lastSendTimeTouches = millis();
   }
 
 }
