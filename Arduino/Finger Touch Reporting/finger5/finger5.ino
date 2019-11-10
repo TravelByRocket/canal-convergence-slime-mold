@@ -18,12 +18,17 @@ const int packetSize = 6; // f10000 for finger 1-9 and then four digitts for the
 char sendHIGH[] = "f51000\0";       // a string to send back // 6 chars + terminator => 7
 char sendLOW[]  = "f50000\0";
 const char * addressLongSiteRight = "192.168.1.101";
-
+const char * addressMacAir = "192.168.1.56";
 
 int waitBetweenMessagesMs = 300; 
 unsigned long lastSendTimeMs = 0;
-bool currState = LOW;
-bool prevState = LOW;
+
+bool currState  = LOW;
+bool prevState  = LOW;
+bool pprevState = LOW;
+bool prevStateFiltered = LOW;
+bool currStateFiltered = LOW;
+float total1Filtered = 0;
 
 WiFiUDP Udp;
 
@@ -34,6 +39,10 @@ void handleSendHIGH(){
   Udp.beginPacket(addressLongSiteRight, localPort);
   Udp.write((const uint8_t*)sendHIGH, packetSize+1);
   Udp.endPacket();
+
+  Udp.beginPacket(addressMacAir, localPort);
+  Udp.write((const uint8_t*)sendHIGH, packetSize+1);
+  Udp.endPacket();
 }
 
 void handleSendLOW(){
@@ -41,6 +50,10 @@ void handleSendLOW(){
   Serial.print(sendLOW);
   Serial.println("");
   Udp.beginPacket(addressLongSiteRight, localPort);
+  Udp.write((const uint8_t*)sendLOW, packetSize+1);
+  Udp.endPacket();
+  
+  Udp.beginPacket(addressMacAir, localPort);
   Udp.write((const uint8_t*)sendLOW, packetSize+1);
   Udp.endPacket();
 }
@@ -121,14 +134,22 @@ void loop()
   Serial.print("\t");
   Serial.println("");
 
-  prevState = currState;
-  currState = (total1 > 350) ? HIGH : LOW;
-  if(prevState != currState || millis() - lastSendTimeMs > waitBetweenMessagesMs){
-    if(currState == HIGH){
+  pprevState = prevState;
+  prevState  = currState;
+  total1Filtered = (0.9 * total1Filtered ) + (0.1 * total1);
+  currState = (total1Filtered > 350) ? HIGH : LOW;
+
+  currStateFiltered = currState || prevState;
+  prevStateFiltered = pprevState || prevState; 
+
+  if(prevStateFiltered != currStateFiltered || millis() - lastSendTimeMs > waitBetweenMessagesMs){
+    if(currStateFiltered == HIGH){
       handleSendHIGH();
-    } else if (currState == LOW){
+    } else {
       handleSendLOW();
     }
     lastSendTimeMs = millis();
   }
+
+  delay(40);
 }
