@@ -18,7 +18,17 @@ const int packetSize = 6; // f10000 for finger 1-9 and then four digitts for the
 char sendHIGH[] = "f51000\0";       // a string to send back // 6 chars + terminator => 7
 char sendLOW[]  = "f50000\0";
 const char * addressLongSiteRight = "192.168.1.101";
+const char * addressMacAir = "192.168.1.56";
 
+int waitBetweenMessagesMs = 300; 
+unsigned long lastSendTimeMs = 0;
+
+bool currState  = LOW;
+bool prevState  = LOW;
+bool pprevState = LOW;
+bool prevStateFiltered = LOW;
+bool currStateFiltered = LOW;
+float total1Filtered = 0;
 
 WiFiUDP Udp;
 
@@ -29,6 +39,10 @@ void handleSendHIGH(){
   Udp.beginPacket(addressLongSiteRight, localPort);
   Udp.write((const uint8_t*)sendHIGH, packetSize+1);
   Udp.endPacket();
+
+  Udp.beginPacket(addressMacAir, localPort);
+  Udp.write((const uint8_t*)sendHIGH, packetSize+1);
+  Udp.endPacket();
 }
 
 void handleSendLOW(){
@@ -36,6 +50,10 @@ void handleSendLOW(){
   Serial.print(sendLOW);
   Serial.println("");
   Udp.beginPacket(addressLongSiteRight, localPort);
+  Udp.write((const uint8_t*)sendLOW, packetSize+1);
+  Udp.endPacket();
+  
+  Udp.beginPacket(addressMacAir, localPort);
   Udp.write((const uint8_t*)sendLOW, packetSize+1);
   Udp.endPacket();
 }
@@ -91,8 +109,12 @@ void setup()
 
   Serial.println("");
   Serial.println("WiFi connected");
+  Serial.print("Network name: ");
+  Serial.println(WiFi.SSID());
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+  Serial.print("MAC: ");
+  Serial.println(WiFi.macAddress());
   
 //  setupWiFiMulti();
 
@@ -110,12 +132,24 @@ void loop()
   Serial.print("the captouch value is ");
   Serial.print(total1);
   Serial.print("\t");
+  Serial.println("");
 
-  if(total1 > 350){
-    handleSendHIGH();
-  } else {
-    handleSendLOW();
+  pprevState = prevState;
+  prevState  = currState;
+  total1Filtered = (0.9 * total1Filtered ) + (0.1 * total1);
+  currState = (total1Filtered > 350) ? HIGH : LOW;
+
+  currStateFiltered = currState || prevState;
+  prevStateFiltered = pprevState || prevState; 
+
+  if(prevStateFiltered != currStateFiltered || millis() - lastSendTimeMs > waitBetweenMessagesMs){
+    if(currStateFiltered == HIGH){
+      handleSendHIGH();
+    } else {
+      handleSendLOW();
+    }
+    lastSendTimeMs = millis();
   }
 
-  delay(100 + random(20)); // arbitrary delay
+  delay(40);
 }

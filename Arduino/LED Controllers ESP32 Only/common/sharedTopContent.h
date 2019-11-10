@@ -14,7 +14,7 @@
 // NOTE use even numbers here to easily avoid empty or doubly-define pixels
 int intersectF1onLED1 = 40;
 int intersectF2onLED2 = 80;
-int intersectF3onLED4 = 20;
+int intersectF3onLED4 = 36;
 int intersectF4onLED5 = 52;
 int intersectF5onLED7 = 92;
 
@@ -133,8 +133,18 @@ char msgIsEmptyFilament5ColorB[] = "g5b000\0"; // send to longSiteLeft when Fila
 char msgIsFullFilament5ColorB[]  = "g5B000\0"; // send to longSiteLeft when Filament 5 is not empty of ColorB
 char msgIsEmptyFilament5ColorC[] = "g5c000\0"; // send to longSiteLeft when Filament 5 is not full of ColorC
 char msgIsFullFilament5ColorC[]  = "g5C000\0"; // send to longSiteLeft when Filament 5 is full of ColorC
+
+char msgLongSiteLeft0Touch[]   = "ll0000\0"; // send to medallion
+char msgLongSiteLeft1Touch[]   = "ll1000\0"; // send to medallion
+char msgLongSiteLeft2Touch[]   = "ll2000\0"; // send to medallion
+char msgLongSiteLeft3Touch[]   = "ll3000\0"; // send to medallion
+char msgLongSiteRight0Touch[]  = "lr0000\0"; // send to medallion
+char msgLongSiteRight1Touch[]  = "lr1000\0"; // send to medallion
+char msgLongSiteRight2Touch[]  = "lr2000\0"; // send to medallion
+
 const char * addressLongSiteLeft  = "192.168.1.100";
 const char * addressLongSiteRight = "192.168.1.101";
 const char * addressMedallion     = "192.168.1.103";
+const char * addressMacAir        = "192.168.1.56";
 
 WiFiUDP Udp;

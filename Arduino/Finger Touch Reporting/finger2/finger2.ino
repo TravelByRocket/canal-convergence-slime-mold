@@ -18,8 +18,12 @@ const int packetSize = 6; // f10000 for finger 1-9 and then four digitts for the
 char sendHIGH[] = "f21000\0";       // a string to send back // 6 chars + terminator => 7
 char sendLOW[]  = "f20000\0";
 const char * addressLongSiteLeft = "192.168.1.100";
-//const char * addressLongSiteLeft = "172.20.10.9";
 
+
+int waitBetweenMessagesMs = 300; 
+unsigned long lastSendTimeMs = 0;
+bool currState = LOW;
+bool prevState = LOW;
 
 WiFiUDP Udp;
 
@@ -92,8 +96,12 @@ void setup()
 
   Serial.println("");
   Serial.println("WiFi connected");
+  Serial.print("Network name: ");
+  Serial.println(WiFi.SSID());
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+  Serial.print("MAC: ");
+  Serial.println(WiFi.macAddress());
   
 //  setupWiFiMulti();
 
@@ -111,12 +119,16 @@ void loop()
   Serial.print("the captouch value is ");
   Serial.print(total1);
   Serial.print("\t");
+  Serial.println("");
 
-  if(total1 > 350){
-    handleSendHIGH();
-  } else {
-    handleSendLOW();
+  prevState = currState;
+  currState = (total1 > 350) ? HIGH : LOW;
+  if(prevState != currState || millis() - lastSendTimeMs > waitBetweenMessagesMs){
+    if(currState == HIGH){
+      handleSendHIGH();
+    } else if (currState == LOW){
+      handleSendLOW();
+    }
+    lastSendTimeMs = millis();
   }
-
-  delay(100 + random(20)); // arbitrary delay
 }

@@ -219,7 +219,7 @@ void handleColoring(){
     for(int pixel=0; pixel<fingerLengths[finger]; pixel++){ // pixel index
       if (pixel >= activeToIndexFingerColorC[finger]){ // if the current pixel index is greater than the ColorC index then make it ColorC
         finger2stripRGB(finger,pixel,cRed,cGre,cBlu); // make ColorC as described above
-      } else if (pixel <= activeToIndexFingerColorB[finger]){ // if the current pixel index is less than the ColorB index then make it ColorB
+      } else if (pixel < activeToIndexFingerColorB[finger]){ // if the current pixel index is less than the ColorB index then make it ColorB
         finger2stripRGB(finger,pixel,bRed,bGre,bBlu); // make ColorB as described above
       // } else if (pixel > activeToIndexFingerColorB[finger] && pixel < activeToIndexFingerColorC[finger]){ // if the current pixel index is greater than the ColorB index and less than the ColorC index then make the pixel ColorA
       } else {
@@ -234,7 +234,7 @@ void handleColoring(){
       // the if statement below could have been written more efficiently but it is instead writte to make more sense to a reader, going in order through colors A, B, and C
       if (pixel >= activeToIndexFilamentColorC[filament]){ // if the current pixel index is greater than the ColorC index then make it ColorC
         filament2stripRGB(filament,pixel,cRed,cGre,cBlu); // make ColorC as described above
-      } else if (pixel <= activeToIndexFilamentColorB[filament]){ // if the current pixel index is less than the ColorB index then make it ColorB
+      } else if (pixel < activeToIndexFilamentColorB[filament]){ // if the current pixel index is less than the ColorB index then make it ColorB
         filament2stripRGB(filament,pixel,bRed,bGre,bBlu); // make ColorB as described above
       } else {
       // if (pixel > activeToIndexFilamentColorB[filament] && pixel < activeToIndexFilamentColorC[filament]){ // if the current pixel index is greater than the ColorB index and less than the ColorC index then make the pixel ColorA
@@ -268,6 +268,9 @@ void handleIncomingUDP(){
   }
 }
 
+unsigned long lastSendTimeTouches = 0;
+int prevTouches = 0;
+int currTouches = 0;
 void sendOutStatuses(){
 
   // NOTE this should only send when there are changes or for heartbeat updates but writing it here for now
@@ -304,6 +307,33 @@ void sendOutStatuses(){
     Udp.write((const uint8_t*)msgIsFullFilament5ColorC, packetSize+1);
     Udp.endPacket();
     Serial.println("send msgIsFullFilament5ColorC");
+  }
+
+  int touchCount = 0;
+  for(int i=3; i<5; i++){
+    if(isTouchedFinger[i]){
+      touchCount++;
+    }
+  }
+
+  prevTouches = currTouches;
+  currTouches = touchCount;
+
+  if(millis() - lastSendTimeTouches > 300 || prevTouches != currTouches){
+    if(touchCount == 0){
+      Udp.beginPacket(addressMedallion,localPort);
+      Udp.write((const uint8_t*)msgLongSiteRight0Touch, packetSize+1);
+      Udp.endPacket();
+    } else if(touchCount == 1){
+      Udp.beginPacket(addressMedallion,localPort);
+      Udp.write((const uint8_t*)msgLongSiteRight1Touch, packetSize+1);
+      Udp.endPacket();
+    } else if(touchCount == 2){
+      Udp.beginPacket(addressMedallion,localPort);
+      Udp.write((const uint8_t*)msgLongSiteRight2Touch, packetSize+1);
+      Udp.endPacket();
+    }
+    lastSendTimeTouches = millis();
   }
 
 }
