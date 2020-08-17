@@ -16,6 +16,9 @@ A touch-responsive inflatable sculpture for the 2019 Canal Convergence event in 
 - Medallion is "Adafruit HUZZAH8266" or something like that
 - Each capacitive touch finger sensor board is a WEMOS D1 mini (not Pro or Lite)
 
+### Driver Installation
+- I think I needed a USB driver from Adafruit for the boards but this information is escaping me 11 months after the fact
+
 ## IP Addresses
 IP Addresses are reserved as
 - 192.168.0.**100** for LongSiteLeft
@@ -101,6 +104,7 @@ The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important
 - The HUZZAH8266 seems to not have enough current available on the pins for reliable two-pin capacitive touch sensing; it showed only a few bits' worth of resolution
 
 ## Future Development
+- Key to LED assignment and basis for future library: offset, direction, and length
 - Object-oriented control of fingers and filements
 - Improved status reporting for send/recieve messages
 - String in and String out for UDP communication to avoid complexities of data types in C++
@@ -109,6 +113,8 @@ The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important
 - FastLED index checking (complete crash when on `.show()` after setting an invalid index)
 - Utilize router broadcast address to simplifiy send/recieve of messages, run automatic setup, and/or avoid complexity of storing multiple IP addresses which forces nearly-identical sketches for multiple boards
 - More verbose (and standardized through my own library) output of Wifi connection status (no error was reported when not successfully connecting to Wifi)
+- Screw terminals continually came loose so find something that is still easy but more secure (also screwdrivers are so easy to lose)
+- Make wiring harnesses faster (e.g., with crimp tools)
 
 ## Open Issues
 - Capacitive touch interference source and mitigation
