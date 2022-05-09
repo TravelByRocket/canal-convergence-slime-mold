@@ -115,6 +115,9 @@ The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important
 - More verbose (and standardized through my own library) output of Wifi connection status (no error was reported when not successfully connecting to Wifi)
 - Screw terminals continually came loose so find something that is still easy but more secure (also screwdrivers are so easy to lose)
 - Make wiring harnesses faster (e.g., with crimp tools)
+- Details about router admin login for IP reservation
+- Reminder about black/green/white as live/ground/neutral for A/C power
+- Diagram IP addresses have `.0.` where it should be  `.1.`
 
 ## Open Issues
 - Capacitive touch interference source and mitigation
