@@ -1,5 +1,7 @@
 # Canal Convergence Interactive Sculpture
-A touch-responsive inflatable sculpture for the 2019 Canal Convergence event in Scottsdale, AZ, November 8-15. A collaboration between the artist [Nicole Banowetz](http://www.nicolebanowetz.com) and technologist [Bryan Costanza](http://somuchscience.com/).
+A touch-responsive inflatable sculpture for the 2019 Canal Convergence event in Scottsdale, AZ, November 8-15. A collaboration between artist [Nicole Banowetz](http://www.nicolebanowetz.com) and technologist [Bryan Costanza](http://somuchscience.com/).
+
+[Jump to Documentation](#documentation)
 
 ## Arduino IDE Setup
 ### Libraries to Install
@@ -14,6 +16,9 @@ A touch-responsive inflatable sculpture for the 2019 Canal Convergence event in 
 - Medallion is "Adafruit HUZZAH8266" or something like that
 - Each capacitive touch finger sensor board is a WEMOS D1 mini (not Pro or Lite)
 
+### Driver Installation
+- I think I needed a USB driver from Adafruit for the boards but this information is escaping me 11 months after the fact
+
 ## IP Addresses
 IP Addresses are reserved as
 - 192.168.0.**100** for LongSiteLeft
@@ -21,7 +26,7 @@ IP Addresses are reserved as
 - 192.168.0.**102** for ShortSite
 - 192.168.0.**103** for Medallion
 
-![hardware layout and details](https://github.com/TravelByRocket/canal-convergence-interactive-sculpture-2019/blob/master/Hardware%20Map.png)
+![hardware layout and details](Hardware%20Map.png)
 
 ## Test Color Temporarily
 The controllers recognize basic commands sent by short UDP strings with strict formatting restrictions. 
@@ -65,3 +70,56 @@ October 20, 2019 -- Only the colors can be changed by UDP message. The format to
 ## Other Notes
 
 The Fingers 1-9 have IP Addresses assigned 110-118, though this is not important as the code is written at the moment except as a confirmation of uploading the correct file with over-the-air updates.
+
+# Documentation
+
+![inflation time lapse](Documentation/inflationtimelapse.mov)
+
+![cap touch working 1](Documentation/cap%20touch%20working%20screenshot%201.png)
+![cap touch working 2](Documentation/cap%20touch%20working%20screenshot%202.png)
+
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards1.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards2.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards3.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards4.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards5%20copy.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards6.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards7.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards8.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards9.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards10.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards11.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards12.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards13.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards14.jpg)
+![cap touch boards](Documentation/CapTouchBoardsOct19/captouchboards15.jpg)
+
+## Lessons Learned
+- Use Feather version of HUZAAH8266 (multiple button presses for update and reseton simple breakout)
+- Plan interaction earlier for streamlined coding approach, including LED mapping and referencing method
+- Identify SMEs at project start for checks and technical problem resolution
+- Run a design review early (and possibly repeatedly)
+- NeoPixel library worked well with ESP8266 but needed FastLED for ESP32
+- Store wifi credentials securely in a library
+- The HUZZAH8266 seems to not have enough current available on the pins for reliable two-pin capacitive touch sensing; it showed only a few bits' worth of resolution
+
+## Future Development
+- Key to LED assignment and basis for future library: offset, direction, and length
+- Object-oriented control of fingers and filements
+- Improved status reporting for send/recieve messages
+- String in and String out for UDP communication to avoid complexities of data types in C++
+- Unified code for multiple MCUs (not managing code for every similar instance); at least import a librarylike file that unifies most of the code
+- Webpage-based status and controls, including streamlined color testing
+- FastLED index checking (complete crash when on `.show()` after setting an invalid index)
+- Utilize router broadcast address to simplifiy send/recieve of messages, run automatic setup, and/or avoid complexity of storing multiple IP addresses which forces nearly-identical sketches for multiple boards
+- More verbose (and standardized through my own library) output of Wifi connection status (no error was reported when not successfully connecting to Wifi)
+- Screw terminals continually came loose so find something that is still easy but more secure (also screwdrivers are so easy to lose)
+- Make wiring harnesses faster (e.g., with crimp tools)
+
+## Open Issues
+- Capacitive touch interference source and mitigation
+- MultiWifi stuck on network login (it worked for weeks and then consistently failed one day on both ESP8226 and ESP32)
+- How to compile selectively for ESP8266 and ESP32 (briefly attempted unsuccessfully)l
+- Source of compilation differences for ESP8266/32 (e.g. using `SSID.c_str()` and `PASS.c_str()` for only ESP32)
+- Generating strings or char arrays on ESP8266 (experienced severe memory access issues)
+- Many conversion issues around items like `.c_str()`, `uint8_t`, `char array`, pointers `*`, copies `&`
